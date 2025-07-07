@@ -1,293 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SPACERUN3008 – Listen & Play</title>
-  <script src="https://telegram.org/js/games.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      background: url('bgobe.jpg') no-repeat center center fixed;
-      background-size: cover;
-      font-family: 'Orbitron', sans-serif;
-      color: white;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    canvas {
-      width: 90vmin;
-      height: 90vmin;
-      max-width: 90vw;
-      max-height: 90vw;
-      background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
-      display: block;
-      box-shadow: 0 0 20px #a020f0;
-      margin: 1rem auto;
-      outline: none;
-      position: relative;
-      z-index: 1;
-    }
-
-    #statusBar {
-      font-size: 1rem;
-      color: white;
-      margin-bottom: 0.5rem;
-      z-index: 3;
-    }
-    #scoreDisplay {
-      font-size: 1.2rem;
-      margin-right: 1.5rem;
-    }
-    #highScoreDisplay {
-      font-size: 1.2rem;
-      margin-left: 1.5rem;
-      color: #a0ffd0;
-    }
-
-    #gameStatusLine {
-      display: none;
-      margin-top: 0.5rem;
-      font-size: 1rem;
-      color: white;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      z-index: 4;
-      position: relative;
-    }
-
-    #finalScore {
-      margin: 0 0.3rem;
-      color: white;
-    }
-
-    #restartBtn, #toggleRadio, #loginBtn, #pauseBtn, #muteBtn {
-      background: none;
-      font-size: 1rem;
-      font-family: 'Orbitron', sans-serif;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      animation: pulse 1.5s infinite ease-in-out;
-      margin: 0 0.3rem;
-    }
-    #speedSelect {
-      background: #181818;
-      color: white;
-      border-radius: 6px;
-      border: 1px solid #a020f0;
-      padding: 0.1rem 0.5rem;
-      font-family: 'Orbitron', sans-serif;
-      margin-left: 0.5rem;
-      font-size: 1rem;
-      outline: none;
-      cursor: pointer;
-    }
-
-    a.leaderboard-link {
-      color: white;
-      text-decoration: underline;
-      font-size: 1rem;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.1; }
-      100% { opacity: 1; }
-    }
-
-    #loginPopup {
-      display: none;
-      position: absolute;
-      top: 30%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.9);
-      border: 1px solid #888;
-      padding: 1rem;
-      border-radius: 10px;
-      color: white;
-      z-index: 20;
-      min-width: 250px;
-    }
-
-    #loginPopup button {
-      margin: 0.5rem;
-      font-size: 1rem;
-      background: #333;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #closeLoginPopup {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      font-size: 18px;
-      color: white;
-      cursor: pointer;
-    }
-
-    #overlay {
-      display: none;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      border-radius: 16px;
-      font-size: 2rem;
-      z-index: 5;
-      padding: 2rem 3rem;
-      pointer-events: none;
-    }
-
-    #controls {
-      display: none;
-      position: relative;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      margin-top: 0.7rem;
-      pointer-events: none;
-      user-select: none;
-      background: none;
-    }
-    .show-dpad #controls {
-      display: flex;
-    }
-    #dpad {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0 auto;
-    }
-    .dpad-btn {
-      position: absolute;
-      width: 65px;
-      height: 65px;
-      background: rgba(255,255,255,0.18);
-      border: 2px solid #fff;
-      color: #fff;
-      font-size: 2rem;
-      border-radius: 20px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #a0ffd080;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      pointer-events: all;
-      user-select: none;
-      touch-action: manipulation;
-      transition: background 0.15s;
-      z-index: 1;
-    }
-    .dpad-btn:active {
-      background: #a020f0;
-    }
-    #upBtn    { top: 0;   left: 50%; transform: translate(-50%, 0); }
-    #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
-    #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
-    #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
-    #pauseDpadBtn {
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.5rem;
-      background: rgba(255,255,255,0.32);
-      border: 2px solid #a020f0;
-      color: #fff;
-      box-shadow: 0 0 16px #a020f0;
-      z-index: 2;
-    }
-
-    .visually-hidden {
-      position: absolute !important;
-      height: 1px; width: 1px;
-      overflow: hidden;
-      clip: rect(1px 1px 1px 1px);
-      clip: rect(1px, 1px, 1px, 1px);
-      white-space: nowrap;
-    }
-    @media (max-width: 550px) {
-      #controls, #dpad {
-        width: 160px;
-        height: 160px;
-      }
-      .dpad-btn {
-        width: 46px;
-        height: 46px;
-        font-size: 1.2rem;
-      }
-    }
-
-    /* Hide pauseBtn in status bar on touch devices */
-    .show-dpad #pauseBtn {
-      display: none !important;
-    }
-  </style>
-</head>
-<body>
-<div style="position:relative;">
-  <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
-  <div id="overlay"></div>
-</div>
-
-<!-- D-pad controller: shown on touch devices only, always under canvas -->
-<div id="controls" aria-label="Game Controller">
-  <div id="dpad">
-    <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
-    <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
-    <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
-    <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
-    <button id="pauseDpadBtn" class="dpad-btn" aria-label="Pause/Resume">⏯️</button>
-  </div>
-</div>
-
-<div id="statusBar">
-  <span id="scoreDisplay">Score: 0</span>
-  <span id="highScoreDisplay">High Score: 0</span>
-  <button id="pauseBtn" aria-pressed="false" title="Pause/Resume">⏸️</button>
-  <button id="muteBtn" aria-pressed="false" title="Mute/Unmute SFX">🔊</button>
-  <label for="speedSelect" class="visually-hidden">Game Speed</label>
-  <select id="speedSelect" title="Game Speed">
-    <option value="250">Normal</option>
-    <option value="120">Fast</option>
-    <option value="60">Turbo</option>
-  </select>
-  <button id="toggleRadio" aria-pressed="false">Radio ON</button>
-  <button id="loginBtn">LOG IN</button>
-</div>
-
-<div id="gameStatusLine" aria-live="polite">
-  <span>Game over.</span>
-  <span id="finalScore">Score: 0</span>
-  <button id="restartBtn">Play Again</button>
-  <a href="https://games4punks.github.io/spacerun3008/leaderboard.html" class="leaderboard-link" target="_blank" rel="noopener noreferrer">View Leaderboard</a>
-</div>
-
-<div id="loginPopup" aria-modal="true" role="dialog">
-  <span id="closeLoginPopup" tabindex="0" aria-label="Close login popup">&times;</span>
-  <p>Select WAX Wallet</p>
-  <button onclick="alert('Login with Anchor')">Anchor</button>
-  <button onclick="alert('Login with MyCloud')">MyCloud</button>
-  <button onclick="alert('Login with Wombat')">Wombat</button>
-</div>
+<!-- ...all previous HTML up to audio definitions remains unchanged... -->
 
 <audio id="radioStream" loop>
   <source src="http://stream.radiojar.com/2qm1fc5kb" type="audio/mpeg">
@@ -296,78 +7,24 @@
 <audio id="crashSound" src="crash.mp3"></audio>
 <audio id="spaceshipSound" src="spaceship.mp3"></audio>
 <audio id="alienSound" src="alien.mp3"></audio>
+<audio id="rocketSound" src="rocket.mp3"></audio>
+<audio id="satelliteSound" src="satellite.mp3"></audio>
 
 <script>
 window.onload = function() {
-  // D-pad visible only on touch devices, always below canvas
-  function isTouchDevice() {
-    return (
-      'ontouchstart' in window ||
-      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
-      (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
-    );
-  }
-  if (isTouchDevice()) {
-    document.body.classList.add('show-dpad');
-  }
+  // ...all previous variable declarations...
 
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-  canvas.width = 400;
-  canvas.height = 400;
+  const rocketSound = document.getElementById("rocketSound");
+  const satelliteSound = document.getElementById("satelliteSound");
+  rocketSound.volume = 0.5;
+  satelliteSound.volume = 0.5;
 
-  const gridSize = 20;
-  const tileCount = canvas.width / gridSize;
-  let snake = [{ x: 10, y: 10 }];
-  let direction = { x: 0, y: 0 };
-  let nextDirection = { x: 0, y: 0 };
-  let apple = { x: 5, y: 5 };
-  let score = 0;
-  let highScore = Number(localStorage.getItem('spacerun_highscore') || "0");
-  let started = false;
-  let paused = false;
-  let gameInterval, speed = 250;
-  let gameOverFlag = false;
-  let sfxMuted = false;
-  let touchStartX, touchStartY;
-  let lastOverlayMsg = "";
-
-  const statusBar = document.getElementById("statusBar");
-  const scoreDisplay = document.getElementById("scoreDisplay");
-  const highScoreDisplay = document.getElementById("highScoreDisplay");
-  const gameStatusLine = document.getElementById("gameStatusLine");
-  const finalScoreSpan = document.getElementById("finalScore");
-  const restartBtn = document.getElementById("restartBtn");
-  const radio = document.getElementById("radioStream");
-  const toggleRadioBtn = document.getElementById("toggleRadio");
-  const explosionSound = document.getElementById("explosionSound");
-  const crashSound = document.getElementById("crashSound");
-  const spaceshipSound = document.getElementById("spaceshipSound");
-  const alienSound = document.getElementById("alienSound");
-  const loginPopup = document.getElementById("loginPopup");
-  const loginBtn = document.getElementById("loginBtn");
-  const closeLoginPopup = document.getElementById("closeLoginPopup");
-  const pauseBtn = document.getElementById("pauseBtn");
-  const muteBtn = document.getElementById("muteBtn");
-  const speedSelect = document.getElementById("speedSelect");
-  const overlay = document.getElementById("overlay");
-
-  // D-pad buttons
-  const upBtn = document.getElementById("upBtn");
-  const downBtn = document.getElementById("downBtn");
-  const leftBtn = document.getElementById("leftBtn");
-  const rightBtn = document.getElementById("rightBtn");
-  const pauseDpadBtn = document.getElementById("pauseDpadBtn");
-
-  explosionSound.volume = 0.5;
-  crashSound.volume = 0.5;
-  spaceshipSound.volume = 0.5;
-  alienSound.volume = 0.5;
-
-  // --- SPECIAL APPLE (spaceship & alien) STATE ---
+  // --- SPECIAL APPLE (spaceship, alien, rocket, satellite) STATE ---
   let specialApples = {
     spaceship: null, // {x, y, visible, timeoutId}
-    alien: null      // {x, y, visible, timeoutId}
+    alien: null,     // {x, y, visible, timeoutId}
+    rocket: null,    // {x, y, visible, timeoutId}
+    satellite: null  // {x, y, visible, timeoutId}
   };
 
   // Helper to get free positions
@@ -376,24 +33,25 @@ window.onload = function() {
     while (tries < 1000) {
       let x = Math.floor(Math.random() * tileCount);
       let y = Math.floor(Math.random() * tileCount);
-      // Not on snake or other apples
+      // Not on snake or any apple
       if (
         !snake.some(seg => seg.x === x && seg.y === y) &&
         !(apple.x === x && apple.y === y) &&
         (!specialApples.spaceship || !(specialApples.spaceship.x === x && specialApples.spaceship.y === y)) &&
-        (!specialApples.alien || !(specialApples.alien.x === x && specialApples.alien.y === y))
+        (!specialApples.alien || !(specialApples.alien.x === x && specialApples.alien.y === y)) &&
+        (!specialApples.rocket || !(specialApples.rocket.x === x && specialApples.rocket.y === y)) &&
+        (!specialApples.satellite || !(specialApples.satellite.x === x && specialApples.satellite.y === y))
       ) return {x, y};
       tries++;
     }
-    // Fallback to (0,0)
     return {x: 0, y: 0};
   }
 
   // --- SPECIAL APPLE TIMERS ---
-  let spaceshipAppearTimer = null, alienAppearTimer = null;
+  let spaceshipAppearTimer = null, alienAppearTimer = null, rocketAppearTimer = null, satelliteAppearTimer = null;
 
   function triggerSpaceshipApple() {
-    if (specialApples.spaceship) return; // Already present
+    if (specialApples.spaceship) return;
     const pos = getFreeCell();
     specialApples.spaceship = {
       x: pos.x,
@@ -405,9 +63,8 @@ window.onload = function() {
       }, 6000)
     };
   }
-
   function triggerAlienApple() {
-    if (specialApples.alien) return; // Already present
+    if (specialApples.alien) return;
     const pos = getFreeCell();
     specialApples.alien = {
       x: pos.x,
@@ -419,27 +76,58 @@ window.onload = function() {
       }, 6000)
     };
   }
+  function triggerRocketApple() {
+    if (specialApples.rocket) return;
+    const pos = getFreeCell();
+    specialApples.rocket = {
+      x: pos.x,
+      y: pos.y,
+      visible: true,
+      timeoutId: setTimeout(() => {
+        specialApples.rocket = null;
+        scheduleRocketApple();
+      }, 6000)
+    };
+  }
+  function triggerSatelliteApple() {
+    if (specialApples.satellite) return;
+    const pos = getFreeCell();
+    specialApples.satellite = {
+      x: pos.x,
+      y: pos.y,
+      visible: true,
+      timeoutId: setTimeout(() => {
+        specialApples.satellite = null;
+        scheduleSatelliteApple();
+      }, 6000)
+    };
+  }
 
+  // Schedule functions (can overlap, so may appear at same time)
   function scheduleSpaceshipApple() {
-    // Spaceship appears every 7-14 seconds after previous disappears
     spaceshipAppearTimer = setTimeout(triggerSpaceshipApple, 7000 + Math.random()*7000);
   }
   function scheduleAlienApple() {
-    // Alien appears every 30-70 seconds after previous disappears (less often)
     alienAppearTimer = setTimeout(triggerAlienApple, 30000 + Math.random()*40000);
+  }
+  function scheduleRocketApple() {
+    rocketAppearTimer = setTimeout(triggerRocketApple, 4000 + Math.random()*9000);
+  }
+  function scheduleSatelliteApple() {
+    satelliteAppearTimer = setTimeout(triggerSatelliteApple, 3500 + Math.random()*8000);
   }
 
   function clearSpecialApples() {
-    if (specialApples.spaceship && specialApples.spaceship.timeoutId)
-      clearTimeout(specialApples.spaceship.timeoutId);
-    if (specialApples.alien && specialApples.alien.timeoutId)
-      clearTimeout(specialApples.alien.timeoutId);
+    for (const key of ["spaceship","alien","rocket","satellite"]) {
+      if (specialApples[key] && specialApples[key].timeoutId)
+        clearTimeout(specialApples[key].timeoutId);
+      specialApples[key] = null;
+    }
     if (spaceshipAppearTimer) clearTimeout(spaceshipAppearTimer);
     if (alienAppearTimer) clearTimeout(alienAppearTimer);
-    specialApples.spaceship = null;
-    specialApples.alien = null;
-    spaceshipAppearTimer = null;
-    alienAppearTimer = null;
+    if (rocketAppearTimer) clearTimeout(rocketAppearTimer);
+    if (satelliteAppearTimer) clearTimeout(satelliteAppearTimer);
+    spaceshipAppearTimer = alienAppearTimer = rocketAppearTimer = satelliteAppearTimer = null;
   }
 
   // --- GAME RESET OVERRIDE ---
@@ -458,10 +146,11 @@ window.onload = function() {
     statusBar.style.display = "block";
     hideOverlay();
     clearInterval(gameInterval);
-    // --- SPECIAL APPLE RESET ---
     clearSpecialApples();
     scheduleSpaceshipApple();
     scheduleAlienApple();
+    scheduleRocketApple();
+    scheduleSatelliteApple();
     gameInterval = setInterval(gameLoop, speed);
     setTimeout(() => canvas.focus(), 100);
   }
@@ -512,7 +201,9 @@ window.onload = function() {
       } while (
         snake.some(seg => seg.x === apple.x && seg.y === apple.y) ||
         (specialApples.spaceship && specialApples.spaceship.x === apple.x && specialApples.spaceship.y === apple.y) ||
-        (specialApples.alien && specialApples.alien.x === apple.x && specialApples.alien.y === apple.y)
+        (specialApples.alien && specialApples.alien.x === apple.x && specialApples.alien.y === apple.y) ||
+        (specialApples.rocket && specialApples.rocket.x === apple.x && specialApples.rocket.y === apple.y) ||
+        (specialApples.satellite && specialApples.satellite.x === apple.x && specialApples.satellite.y === apple.y)
       );
     }
 
@@ -550,6 +241,40 @@ window.onload = function() {
       ate = true;
     }
 
+    // Rocket apple
+    if (specialApples.rocket && head.x === specialApples.rocket.x && head.y === specialApples.rocket.y) {
+      score += 5;
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('spacerun_highscore', highScore);
+      }
+      if (!sfxMuted) {
+        rocketSound.currentTime = 0;
+        rocketSound.play();
+      }
+      clearTimeout(specialApples.rocket.timeoutId);
+      specialApples.rocket = null;
+      scheduleRocketApple();
+      ate = true;
+    }
+
+    // Satellite apple
+    if (specialApples.satellite && head.x === specialApples.satellite.x && head.y === specialApples.satellite.y) {
+      score += 3;
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('spacerun_highscore', highScore);
+      }
+      if (!sfxMuted) {
+        satelliteSound.currentTime = 0;
+        satelliteSound.play();
+      }
+      clearTimeout(specialApples.satellite.timeoutId);
+      specialApples.satellite = null;
+      scheduleSatelliteApple();
+      ate = true;
+    }
+
     if (!ate) {
       snake.pop();
     }
@@ -569,202 +294,42 @@ window.onload = function() {
       ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2);
       ctx.restore();
     });
-    // Draw apple (normal)
+    // Draw normal apple
     ctx.save();
     ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
     ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2);
     ctx.restore();
 
-    // Draw spaceship apple if present and visible
+    // Draw special apples if present
     if (specialApples.spaceship && specialApples.spaceship.visible) {
       ctx.save();
       ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
       ctx.fillText("🛸", specialApples.spaceship.x * gridSize + gridSize / 2, specialApples.spaceship.y * gridSize + gridSize / 2);
       ctx.restore();
     }
-    // Draw alien apple if present and visible
     if (specialApples.alien && specialApples.alien.visible) {
       ctx.save();
       ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
       ctx.fillText("👽", specialApples.alien.x * gridSize + gridSize / 2, specialApples.alien.y * gridSize + gridSize / 2);
       ctx.restore();
     }
-  }
-
-  function updateHud() {
-    scoreDisplay.textContent = "Score: " + score;
-    highScoreDisplay.textContent = "High Score: " + highScore;
-  }
-
-  function showOverlay(msg) {
-    overlay.textContent = msg;
-    overlay.style.display = "block";
-    lastOverlayMsg = msg;
-  }
-  function hideOverlay() {
-    overlay.style.display = "none";
-    lastOverlayMsg = "";
-  }
-
-  // Accessibility: close popup with Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape" && loginPopup.style.display === 'block') {
-      loginPopup.style.display = 'none';
+    if (specialApples.rocket && specialApples.rocket.visible) {
+      ctx.save();
+      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
+      ctx.fillText("🚀", specialApples.rocket.x * gridSize + gridSize / 2, specialApples.rocket.y * gridSize + gridSize / 2);
+      ctx.restore();
     }
-  });
-
-  loginBtn.onclick = () => {
-    loginPopup.style.display = 'block';
-    closeLoginPopup.focus();
-  };
-
-  closeLoginPopup.onclick = () => {
-    loginPopup.style.display = 'none';
-  };
-
-  closeLoginPopup.addEventListener('keydown', e => {
-    if (e.key === "Enter" || e.key === " ") {
-      loginPopup.style.display = 'none';
-    }
-  });
-
-  window.onclick = function(event) {
-    if (event.target === loginPopup) {
-      loginPopup.style.display = 'none';
-    }
-  };
-
-  function setDirection(newDir) {
-    if (
-      (newDir.x !== -direction.x || direction.x === 0) &&
-      (newDir.y !== -direction.y || direction.y === 0)
-    ) {
-      nextDirection = newDir;
-      started = true;
-      if (!paused && !gameOverFlag) hideOverlay();
+    if (specialApples.satellite && specialApples.satellite.visible) {
+      ctx.save();
+      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
+      ctx.fillText("🛰️", specialApples.satellite.x * gridSize + gridSize / 2, specialApples.satellite.y * gridSize + gridSize / 2);
+      ctx.restore();
     }
   }
 
-  function gameOver() {
-    clearInterval(gameInterval);
-    finalScoreSpan.textContent = `Score: ${score}`;
-    updateHud();
-    statusBar.style.display = "none";
-    gameStatusLine.style.display = "flex";
-    gameOverFlag = true;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    showOverlay("GAME OVER");
-    setTimeout(hideOverlay, 1800);
-    clearSpecialApples();
-  }
-
-  document.addEventListener("keydown", e => {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d"].includes(e.key)) {
-      if (e.key === "ArrowUp" || e.key === "w") setDirection({ x: 0, y: -1 });
-      if (e.key === "ArrowDown" || e.key === "s") setDirection({ x: 0, y: 1 });
-      if (e.key === "ArrowLeft" || e.key === "a") setDirection({ x: -1, y: 0 });
-      if (e.key === "ArrowRight" || e.key === "d") setDirection({ x: 1, y: 0 });
-      canvas.focus();
-    }
-    // Pause/resume
-    if (e.key.toLowerCase() === "p") {
-      togglePause();
-    }
-    // Restart on Enter after game over
-    if (gameOverFlag && e.key === "Enter") {
-      resetGame();
-    }
-  });
-
-  // Touch swipe support
-  canvas.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1) {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }
-  });
-  canvas.addEventListener('touchend', function(e) {
-    if (touchStartX === undefined || touchStartY === undefined) return;
-    let dx = e.changedTouches[0].clientX - touchStartX;
-    let dy = e.changedTouches[0].clientY - touchStartY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 20) setDirection({ x: 1, y: 0 }); // right
-      if (dx < -20) setDirection({ x: -1, y: 0 }); // left
-    } else {
-      if (dy > 20) setDirection({ x: 0, y: 1 }); // down
-      if (dy < -20) setDirection({ x: 0, y: -1 }); // up
-    }
-    touchStartX = touchStartY = undefined;
-  });
-
-  // D-pad controls (controller cross)
-  upBtn.onclick = e => setDirection({ x: 0, y: -1 });
-  downBtn.onclick = e => setDirection({ x: 0, y: 1 });
-  leftBtn.onclick = e => setDirection({ x: -1, y: 0 });
-  rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
-  pauseDpadBtn.onclick = togglePause;
-  pauseBtn.onclick = togglePause;
-
-  function togglePause() {
-    if (gameOverFlag) return;
-    paused = !paused;
-    pauseBtn.innerHTML = paused ? "▶️" : "⏸️";
-    pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
-    pauseDpadBtn.innerHTML = paused ? "▶️" : "⏯️";
-    if (paused) {
-      showOverlay("PAUSED");
-    } else {
-      hideOverlay();
-    }
-  }
-
-  restartBtn.onclick = resetGame;
-
-  toggleRadioBtn.onclick = () => {
-    if (radio.paused) {
-      radio.play();
-      toggleRadioBtn.textContent = "Radio OFF";
-      toggleRadioBtn.setAttribute("aria-pressed", "true");
-    } else {
-      radio.pause();
-      toggleRadioBtn.textContent = "Radio ON";
-      toggleRadioBtn.setAttribute("aria-pressed", "false");
-    }
-  };
-
-  // SFX mute/unmute
-  muteBtn.onclick = () => {
-    sfxMuted = !sfxMuted;
-    muteBtn.textContent = sfxMuted ? "🔇" : "🔊";
-    muteBtn.setAttribute("aria-pressed", sfxMuted ? "true" : "false");
-  };
-
-  // Speed select
-  speedSelect.value = speed + '';
-  speedSelect.onchange = () => {
-    speed = Number(speedSelect.value);
-    clearInterval(gameInterval);
-    gameInterval = setInterval(gameLoop, speed);
-  };
-
-  // Focus canvas on click
-  canvas.onclick = () => canvas.focus();
-
-  // Responsive canvas resizing
-  function resizeCanvas() {
-    const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
-    canvas.style.width = size + "px";
-    canvas.style.height = size + "px";
-  }
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
-
-  // Show overlay if paused when focus returns
-  window.addEventListener('focus', () => {
-    if (paused && lastOverlayMsg !== "PAUSED") showOverlay("PAUSED");
-  });
-
-  // Initial setup
+  // ...rest of your unchanged game code (event listeners, pause, overlay, etc.)...
+  // (You can keep everything else as-is from your current working version)
+  // (Call updateHud(); resetGame(); at the end)
   updateHud();
   resetGame();
 }
