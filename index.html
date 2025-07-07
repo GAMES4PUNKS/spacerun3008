@@ -19,14 +19,13 @@
       align-items: center;
       min-height: 100vh;
       overflow-x: hidden;
-      padding-bottom: 100px; /* To ensure space for controls */
     }
 
     canvas {
       width: 90vmin;
-      height: 60vmin; /* Adjusted height */
+      height: 80vmin;
       max-width: 90vw;
-      max-height: 60vh;
+      max-height: 80vh;
       background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
       display: block;
       box-shadow: 0 0 20px #a020f0;
@@ -111,7 +110,7 @@
       cursor: pointer;
     }
 
-    /* Controls section (only visible on mobile) */
+    /* Mobile controls at the bottom */
     #controls {
       display: none;
       position: absolute;
@@ -120,6 +119,7 @@
       z-index: 10;
       justify-content: center;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     #controls button {
@@ -141,7 +141,7 @@
       justify-content: center;
     }
 
-    /* Make the controls visible only for touch devices (and hide on desktop) */
+    /* Controls visibility for touch devices (only on mobile) */
     .touch-device #controls {
       display: flex;
     }
@@ -158,7 +158,7 @@
 
 <canvas id="gameCanvas"></canvas>
 
-<!-- Controls for mobile -->
+<!-- Mobile controls (visible only on mobile/touch) -->
 <div id="controls" class="touch-device">
   <div class="row">
     <button id="upBtn">↑</button>
@@ -315,6 +315,7 @@
     if (e.key === "ArrowRight" && direction.x === 0) direction = { x: 1, y: 0 };
   });
 
+  // Mobile controls (button clicks)
   document.getElementById("upBtn").onclick = () => { direction = { x: 0, y: -1 }; started = true; };
   document.getElementById("downBtn").onclick = () => { direction = { x: 0, y: 1 }; started = true; };
   document.getElementById("leftBtn").onclick = () => { direction = { x: -1, y: 0 }; started = true; };
