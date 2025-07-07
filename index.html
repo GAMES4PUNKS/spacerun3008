@@ -389,6 +389,16 @@ window.onload = function() {
     if (name === "spaceman") {
       if (apple.timer) clearTimeout(apple.timer);
       apple.timer = setTimeout(() => { apple.active = false; scheduleApple("spaceman"); }, apple.visibleDuration);
+    } else if (name === "invader") {
+      // Invader logic unchanged, handled by scheduleApple
+    } else {
+      // For all other apples, display for random time 2–7s
+      if (apple.timer) clearTimeout(apple.timer);
+      const visibleMs = 2000 + Math.random() * 5000; // 2s–7s
+      apple.timer = setTimeout(() => {
+        apple.active = false;
+        scheduleApple(name);
+      }, visibleMs);
     }
   }
 
@@ -540,14 +550,10 @@ window.onload = function() {
     lastOverlayMsg = "";
   }
   function setDirection(newDir) {
-    if (
-      (newDir.x !== -direction.x || direction.x === 0) &&
-      (newDir.y !== -direction.y || direction.y === 0)
-    ) {
-      nextDirection = newDir;
-      started = true;
-      if (!paused && !gameOverFlag) hideOverlay();
-    }
+    // Allow all reversals (no restriction)
+    nextDirection = newDir;
+    started = true;
+    if (!paused && !gameOverFlag) hideOverlay();
   }
   function gameOver() {
     clearInterval(gameInterval);
