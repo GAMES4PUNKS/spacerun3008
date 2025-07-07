@@ -9,6 +9,7 @@
 <audio id="alienSound" src="alien.mp3"></audio>
 <audio id="rocketSound" src="rocket.mp3"></audio>
 <audio id="satelliteSound" src="satellite.mp3"></audio>
+<audio id="spacemanSound" src="spaceman.mp3"></audio>
 
 <script>
 window.onload = function() {
@@ -16,15 +17,18 @@ window.onload = function() {
 
   const rocketSound = document.getElementById("rocketSound");
   const satelliteSound = document.getElementById("satelliteSound");
+  const spacemanSound = document.getElementById("spacemanSound");
   rocketSound.volume = 0.5;
   satelliteSound.volume = 0.5;
+  spacemanSound.volume = 0.5;
 
-  // --- SPECIAL APPLE (spaceship, alien, rocket, satellite) STATE ---
+  // --- SPECIAL APPLE (spaceship, alien, rocket, satellite, spaceman) STATE ---
   let specialApples = {
     spaceship: null, // {x, y, visible, timeoutId}
     alien: null,     // {x, y, visible, timeoutId}
     rocket: null,    // {x, y, visible, timeoutId}
-    satellite: null  // {x, y, visible, timeoutId}
+    satellite: null, // {x, y, visible, timeoutId}
+    spaceman: null   // {x, y, visible, timeoutId}
   };
 
   // Helper to get free positions
@@ -40,7 +44,8 @@ window.onload = function() {
         (!specialApples.spaceship || !(specialApples.spaceship.x === x && specialApples.spaceship.y === y)) &&
         (!specialApples.alien || !(specialApples.alien.x === x && specialApples.alien.y === y)) &&
         (!specialApples.rocket || !(specialApples.rocket.x === x && specialApples.rocket.y === y)) &&
-        (!specialApples.satellite || !(specialApples.satellite.x === x && specialApples.satellite.y === y))
+        (!specialApples.satellite || !(specialApples.satellite.x === x && specialApples.satellite.y === y)) &&
+        (!specialApples.spaceman || !(specialApples.spaceman.x === x && specialApples.spaceman.y === y))
       ) return {x, y};
       tries++;
     }
@@ -48,7 +53,7 @@ window.onload = function() {
   }
 
   // --- SPECIAL APPLE TIMERS ---
-  let spaceshipAppearTimer = null, alienAppearTimer = null, rocketAppearTimer = null, satelliteAppearTimer = null;
+  let spaceshipAppearTimer = null, alienAppearTimer = null, rocketAppearTimer = null, satelliteAppearTimer = null, spacemanAppearTimer = null;
 
   function triggerSpaceshipApple() {
     if (specialApples.spaceship) return;
@@ -102,6 +107,19 @@ window.onload = function() {
       }, 6000)
     };
   }
+  function triggerSpacemanApple() {
+    if (specialApples.spaceman) return;
+    const pos = getFreeCell();
+    specialApples.spaceman = {
+      x: pos.x,
+      y: pos.y,
+      visible: true,
+      timeoutId: setTimeout(() => {
+        specialApples.spaceman = null;
+        scheduleSpacemanApple();
+      }, 2000)
+    };
+  }
 
   // Schedule functions (can overlap, so may appear at same time)
   function scheduleSpaceshipApple() {
@@ -116,9 +134,13 @@ window.onload = function() {
   function scheduleSatelliteApple() {
     satelliteAppearTimer = setTimeout(triggerSatelliteApple, 3500 + Math.random()*8000);
   }
+  function scheduleSpacemanApple() {
+    // Spaceman appears very often: every 2-5 seconds
+    spacemanAppearTimer = setTimeout(triggerSpacemanApple, 2000 + Math.random()*3000);
+  }
 
   function clearSpecialApples() {
-    for (const key of ["spaceship","alien","rocket","satellite"]) {
+    for (const key of ["spaceship","alien","rocket","satellite","spaceman"]) {
       if (specialApples[key] && specialApples[key].timeoutId)
         clearTimeout(specialApples[key].timeoutId);
       specialApples[key] = null;
@@ -127,7 +149,8 @@ window.onload = function() {
     if (alienAppearTimer) clearTimeout(alienAppearTimer);
     if (rocketAppearTimer) clearTimeout(rocketAppearTimer);
     if (satelliteAppearTimer) clearTimeout(satelliteAppearTimer);
-    spaceshipAppearTimer = alienAppearTimer = rocketAppearTimer = satelliteAppearTimer = null;
+    if (spacemanAppearTimer) clearTimeout(spacemanAppearTimer);
+    spaceshipAppearTimer = alienAppearTimer = rocketAppearTimer = satelliteAppearTimer = spacemanAppearTimer = null;
   }
 
   // --- GAME RESET OVERRIDE ---
@@ -151,6 +174,7 @@ window.onload = function() {
     scheduleAlienApple();
     scheduleRocketApple();
     scheduleSatelliteApple();
+    scheduleSpacemanApple();
     gameInterval = setInterval(gameLoop, speed);
     setTimeout(() => canvas.focus(), 100);
   }
@@ -192,7 +216,6 @@ window.onload = function() {
         explosionSound.currentTime = 0;
         explosionSound.play();
       }
-      // Place apple not on snake or specials
       do {
         apple = {
           x: Math.floor(Math.random() * tileCount),
@@ -203,7 +226,8 @@ window.onload = function() {
         (specialApples.spaceship && specialApples.spaceship.x === apple.x && specialApples.spaceship.y === apple.y) ||
         (specialApples.alien && specialApples.alien.x === apple.x && specialApples.alien.y === apple.y) ||
         (specialApples.rocket && specialApples.rocket.x === apple.x && specialApples.rocket.y === apple.y) ||
-        (specialApples.satellite && specialApples.satellite.x === apple.x && specialApples.satellite.y === apple.y)
+        (specialApples.satellite && specialApples.satellite.x === apple.x && specialApples.satellite.y === apple.y) ||
+        (specialApples.spaceman && specialApples.spaceman.x === apple.x && specialApples.spaceman.y === apple.y)
       );
     }
 
@@ -275,6 +299,20 @@ window.onload = function() {
       ate = true;
     }
 
+    // Spaceman apple
+    if (specialApples.spaceman && head.x === specialApples.spaceman.x && head.y === specialApples.spaceman.y) {
+      score = 0;
+      updateHud();
+      if (!sfxMuted) {
+        spacemanSound.currentTime = 0;
+        spacemanSound.play();
+      }
+      clearTimeout(specialApples.spaceman.timeoutId);
+      specialApples.spaceman = null;
+      scheduleSpacemanApple();
+      ate = true;
+    }
+
     if (!ate) {
       snake.pop();
     }
@@ -323,6 +361,12 @@ window.onload = function() {
       ctx.save();
       ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
       ctx.fillText("🛰️", specialApples.satellite.x * gridSize + gridSize / 2, specialApples.satellite.y * gridSize + gridSize / 2);
+      ctx.restore();
+    }
+    if (specialApples.spaceman && specialApples.spaceman.visible) {
+      ctx.save();
+      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
+      ctx.fillText("🧑‍🚀", specialApples.spaceman.x * gridSize + gridSize / 2, specialApples.spaceman.y * gridSize + gridSize / 2);
       ctx.restore();
     }
   }
