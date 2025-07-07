@@ -156,6 +156,17 @@
     loginPopup.style.display = loginPopup.style.display === 'block' ? 'none' : 'block';
   };
 
+  // Random flicker speed generator
+  function getRandomFlickerSpeed() {
+    return Math.floor(Math.random() * 50) + 30; // Random speed between 30 and 80
+  }
+
+  // Function to increase snake speed by 2%
+  function increaseSpeed() {
+    speed = speed * 0.98; // Increase speed by 2%
+    if (speed < 50) speed = 50; // Minimum speed cap (optional)
+  }
+
   function resetGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
@@ -196,6 +207,7 @@
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount)
       };
+      increaseSpeed(); // Increase speed every time the apple is eaten
     } else {
       snake.pop();
     }
@@ -204,21 +216,20 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // Draw the snake with flickering effect
+    // Draw the snake with randomized flicker speed (using ✨ emoji)
     snake.forEach((seg, i) => {
-      const delay = (i * 100) % 150;
+      const delay = getRandomFlickerSpeed(); // Random flicker speed for each segment
       ctx.save();
       ctx.globalAlpha = Math.abs(Math.sin((Date.now() + delay) / 30)); // Flickering effect
-      ctx.fillStyle = "green"; // Snake color
-      ctx.fillRect(seg.x * gridSize, seg.y * gridSize, gridSize, gridSize);
+      ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2); // Snake emoji
       ctx.restore();
     });
 
-    // Draw the apple with flickering effect
+    // Draw the apple with randomized flicker speed (using 👾 emoji)
     ctx.save();
-    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30)); // Flickering effect
-    ctx.fillStyle = "red"; // Apple color
-    ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize, gridSize);
+    const appleFlickerSpeed = getRandomFlickerSpeed(); // Random flicker speed for the apple
+    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / appleFlickerSpeed)); // Flickering effect
+    ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2); // Apple emoji
     ctx.restore();
   }
 
