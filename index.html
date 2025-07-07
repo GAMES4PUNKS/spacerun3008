@@ -334,3 +334,339 @@
 </script>
 </body>
 </html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPACERUN3008 – Listen & Play</title>
+  <script src="https://telegram.org/js/games.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: url('bgobe.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      width: 90vmin;
+      height: 70vmin; /* Reduce the height to leave space for controls */
+      max-width: 90vw;
+      max-height: 70vh; /* Ensure it fits nicely */
+      background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
+      display: block;
+      box-shadow: 0 0 20px #a020f0;
+      margin: 1rem auto;
+    }
+
+    #statusBar {
+      font-size: 1rem;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    #gameStatusLine {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: white;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #finalScore {
+      margin: 0 0.3rem;
+      color: white;
+    }
+
+    #restartBtn, #toggleRadio, #loginBtn {
+      background: none;
+      font-size: 1rem;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    a.leaderboard-link {
+      color: white;
+      text-decoration: underline;
+      font-size: 1rem;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.1; }
+      100% { opacity: 1; }
+    }
+
+    #loginPopup {
+      display: none;
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      border: 1px solid #888;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+    }
+
+    #loginPopup button {
+      margin: 0.5rem;
+      font-size: 1rem;
+      background: #333;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #closeLoginPopup {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* On-Screen Controls for Mobile and Tablet */
+    #controls {
+      display: none; /* Hidden by default, only visible on touch devices */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      bottom: 20px; /* Adjust the position further to create more space */
+      width: 100%;
+    }
+
+    #controls button {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid #ffffff;
+      color: white;
+      padding: 20px;
+      margin: 10px;
+      font-size: 28px;
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+
+    #controls .row {
+      display: flex;
+      justify-content: center;
+    }
+
+    #controls .row button {
+      margin: 5px;
+    }
+
+    /* Show controls only if touch device is detected */
+    .touch-device #controls {
+      display: flex;
+    }
+
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<!-- On-Screen Controls for Mobile and Tablet -->
+<div id="controls">
+  <!-- Up and Down Rows -->
+  <div class="row">
+    <button id="upBtn">↑</button>
+  </div>
+  <div class="row">
+    <button id="leftBtn">←</button>
+    <button id="rightBtn">→</button>
+  </div>
+  <div class="row">
+    <button id="downBtn">↓</button>
+  </div>
+</div>
+
+<div id="statusBar">
+  Game ready – press arrow key
+  <button id="toggleRadio">Radio ON</button>
+  <button id="loginBtn">LOG IN</button>
+</div>
+
+<div id="gameStatusLine">
+  <span>Game over.</span>
+  <span id="finalScore">Score: 0</span>
+  <button id="restartBtn">Play Again</button>
+  <a href="https://games4punks.github.io/spacerun3008/leaderboard.html" class="leaderboard-link" target="_blank">View Leaderboard</a>
+</div>
+
+<div id="loginPopup">
+  <span id="closeLoginPopup">&times;</span>
+  <p>Select WAX Wallet</p>
+  <button onclick="alert('Login with Anchor')">Anchor</button>
+  <button onclick="alert('Login with MyCloud')">MyCloud</button>
+  <button onclick="alert('Login with Wombat')">Wombat</button>
+</div>
+
+<audio id="radioStream" loop>
+  <source src="http://stream.radiojar.com/2qm1fc5kb" type="audio/mpeg">
+</audio>
+<audio id="explosionSound" src="explosion.mp3"></audio>
+<audio id="crashSound" src="crash.mp3"></audio>
+
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 400;
+  canvas.height = 400;
+
+  const gridSize = 20;
+  const tileCount = canvas.width / gridSize;
+  let snake = [{ x: 10, y: 10 }];
+  let direction = { x: 0, y: 0 };
+  let apple = { x: 5, y: 5 };
+  let score = 0;
+  let started = false;
+  let gameInterval, speed = 250;
+  let gameOverFlag = false;
+
+  const statusBar = document.getElementById("statusBar");
+  const gameStatusLine = document.getElementById("gameStatusLine");
+  const finalScoreSpan = document.getElementById("finalScore");
+  const restartBtn = document.getElementById("restartBtn");
+  const radio = document.getElementById("radioStream");
+  const toggleRadioBtn = document.getElementById("toggleRadio");
+  const explosionSound = document.getElementById("explosionSound");
+  const crashSound = document.getElementById("crashSound");
+  const loginPopup = document.getElementById("loginPopup");
+  const loginBtn = document.getElementById("loginBtn");
+  const closeLoginPopup = document.getElementById("closeLoginPopup");
+
+  explosionSound.volume = 0.5;
+  crashSound.volume = 0.5;
+
+  loginBtn.onclick = () => {
+    loginPopup.style.display = 'block';
+  };
+
+  closeLoginPopup.onclick = () => {
+    loginPopup.style.display = 'none';
+  };
+
+  function resetGame() {
+    snake = [{ x: 10, y: 10 }];
+    direction = { x: 0, y: 0 };
+    apple = { x: 5, y: 5 };
+    score = 0;
+    started = false;
+    gameOverFlag = false;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    gameStatusLine.style.display = "none";
+    statusBar.style.display = "block";
+    statusBar.childNodes[0].textContent = "Game ready – press arrow key ";
+
+    gameInterval = setInterval(gameLoop, speed);
+    setTimeout(() => canvas.focus(), 100);
+    canvas.onclick = () => canvas.focus();
+  }
+
+  function gameLoop() {
+    if (!started || gameOverFlag) return;
+    const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(seg => seg.x === head.x && seg.y === head.y)) {
+      crashSound.currentTime = 0;
+      crashSound.play();
+      gameOver();
+      return;
+    }
+    snake.unshift(head);
+    if (head.x === apple.x && head.y === apple.y) {
+      score++;
+      explosionSound.currentTime = 0;
+      explosionSound.play();
+      apple = {
+        x: Math.floor(Math.random() * tileCount),
+        y: Math.floor(Math.random() * tileCount)
+      };
+    } else {
+      snake.pop();
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    ctx.font = `${gridSize}px Orbitron`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    snake.forEach((seg, i) => {
+      ctx.save();
+      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + i * 100) / 30));
+      ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2);
+      ctx.restore();
+    });
+
+    ctx.save();
+    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
+    ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2);
+    ctx.restore();
+  }
+
+  function gameOver() {
+    clearInterval(gameInterval);
+    finalScoreSpan.textContent = `Score: ${score}`;
+    statusBar.style.display = "none";
+    gameStatusLine.style.display = "flex";
+    gameOverFlag = true;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  document.addEventListener("keydown", e => {
+    if (!started && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      started = true;
+      statusBar.childNodes[0].textContent = "Game running... ";
+    }
+    if (e.key === "ArrowUp" && direction.y === 0) direction = { x: 0, y: -1 };
+    if (e.key === "ArrowDown" && direction.y === 0) direction = { x: 0, y: 1 };
+    if (e.key === "ArrowLeft" && direction.x === 0) direction = { x: -1, y: 0 };
+    if (e.key === "ArrowRight" && direction.x === 0) direction = { x: 1, y: 0 };
+  });
+
+  document.getElementById("upBtn").onclick = () => { direction = { x: 0, y: -1 }; started = true; };
+  document.getElementById("downBtn").onclick = () => { direction = { x: 0, y: 1 }; started = true; };
+  document.getElementById("leftBtn").onclick = () => { direction = { x: -1, y: 0 }; started = true; };
+  document.getElementById("rightBtn").onclick = () => { direction = { x: 1, y: 0 }; started = true; };
+
+  restartBtn.onclick = resetGame;
+
+  toggleRadioBtn.onclick = () => {
+    if (radio.paused) {
+      radio.play();
+      toggleRadioBtn.textContent = "Radio OFF";
+    } else {
+      radio.pause();
+      toggleRadioBtn.textContent = "Radio ON";
+    }
+  };
+
+  resetGame();
+</script>
+</body>
+</html>
