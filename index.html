@@ -146,6 +146,7 @@
   let score = 0;
   let started = false;
   let gameInterval, speed = 250;
+  let gameOverFlag = false; // New flag to handle game-over state
 
   const statusBar = document.getElementById("statusBar");
   const gameStatusLine = document.getElementById("gameStatusLine");
@@ -188,6 +189,7 @@
     score = 0;
     started = false;
     clearInterval(gameInterval);
+    gameOverFlag = false; // Reset game-over flag
     gameStatusLine.style.display = "none";
     statusBar.style.display = "block";
     statusBar.childNodes[0].textContent = "Game ready – press arrow key ";
@@ -204,7 +206,7 @@
   }
 
   function gameLoop() {
-    if (!started) return;
+    if (!started || gameOverFlag) return; // Prevent game loop from running when game is over
     const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
     if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(seg => seg.x === head.x && seg.y === head.y)) {
       crashSound.currentTime = 0;
@@ -252,6 +254,7 @@
     finalScoreSpan.textContent = `Score: ${score}`;
     statusBar.style.display = "none";
     gameStatusLine.style.display = "flex";
+    gameOverFlag = true; // Set game over flag to true
   }
 
   document.addEventListener("keydown", e => {
@@ -304,6 +307,7 @@
 </script>
 </body>
 </html>
+
 
 
 
