@@ -155,23 +155,21 @@
       pointer-events: none;
     }
 
-    /* Game controller cross layout, always visible */
+    /* Game controller cross layout, hidden by default; shown for touch devices via JS */
     #controls {
-      display: flex !important;
-      position: fixed;
-      left: 50%;
-      bottom: 35px;
-      transform: translateX(-50%);
-      z-index: 10;
-      width: 220px;
-      height: 220px;
+      display: none;
+      position: relative;
       justify-content: center;
       align-items: center;
+      width: 100%;
+      margin-top: 0.7rem;
       pointer-events: none;
-      background: none;
       user-select: none;
+      background: none;
     }
-
+    .show-dpad #controls {
+      display: flex;
+    }
     #dpad {
       position: relative;
       width: 220px;
@@ -179,6 +177,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      margin: 0 auto;
     }
     .dpad-btn {
       position: absolute;
@@ -207,7 +206,7 @@
     #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
     #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
     #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
-    #pauseDpadBtn { /* Center button */
+    #pauseDpadBtn {
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-size: 1.5rem;
@@ -245,7 +244,7 @@
   <div id="overlay"></div>
 </div>
 
-<!-- Always visible cross-shaped controller with a pause button in the center -->
+<!-- D-pad controller: shown on touch devices only, always under canvas -->
 <div id="controls" aria-label="Game Controller">
   <div id="dpad">
     <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
@@ -293,13 +292,17 @@
 <audio id="crashSound" src="crash.mp3"></audio>
 
 <script>
-  // Touch device detection for showing controls (now always displayed)
-  // function isTouchDevice() {
-  //   return 'ontouchstart' in window || navigator.maxTouchPoints;
-  // }
-  // if (isTouchDevice()) {
-  //   document.body.classList.add('touch-device');
-  // }
+  // D-pad visible only on touch devices, always below canvas
+  function isTouchDevice() {
+    return (
+      'ontouchstart' in window ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+      (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+    );
+  }
+  if (isTouchDevice()) {
+    document.body.classList.add('show-dpad');
+  }
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -513,7 +516,7 @@
     }
   });
 
-  // Touch swipe support (optional for canvas, but dpad always visible now)
+  // Touch swipe support
   canvas.addEventListener('touchstart', function(e) {
     if (e.touches.length === 1) {
       touchStartX = e.touches[0].clientX;
