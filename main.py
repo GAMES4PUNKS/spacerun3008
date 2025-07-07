@@ -29,8 +29,11 @@ async def start_game(update: Update, context):
     # Send game start prompt (redirect or actual game interface)
     await update.callback_query.answer()
     await update.callback_query.edit_message_text("The game is starting! Ready your space ship!")
-    # You can link here to the game using the game URL
+    
+    # You can link here to the game using the game URL (updated for SPACERUN3008)
     game_url = "https://t.me/GAMES4PUNKSBOT?game=SPACERUN3008"
+    
+    # Send the game URL for users to join
     await update.callback_query.message.reply_text(f"Click here to start playing: {game_url}")
 
 # Error handler
@@ -61,3 +64,4 @@ async def main():
 # Running the bot
 if __name__ == '__main__':
     asyncio.run(main())
+
