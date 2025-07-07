@@ -204,19 +204,22 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // Draw the snake
+    // Draw the snake with flickering effect
     snake.forEach((seg, i) => {
       const delay = (i * 100) % 150;
       ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + delay) / 30));
-      ctx.fillStyle = "green";
+      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + delay) / 30)); // Flickering effect
+      ctx.fillStyle = "green"; // Snake color
       ctx.fillRect(seg.x * gridSize, seg.y * gridSize, gridSize, gridSize);
       ctx.restore();
     });
 
-    // Draw the apple
-    ctx.fillStyle = "red";
+    // Draw the apple with flickering effect
+    ctx.save();
+    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30)); // Flickering effect
+    ctx.fillStyle = "red"; // Apple color
     ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize, gridSize);
+    ctx.restore();
   }
 
   function gameOver() {
