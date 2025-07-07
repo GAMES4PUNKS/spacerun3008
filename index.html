@@ -33,26 +33,37 @@
       z-index: 1;
     }
     #touchpad {
-      width: 90vmin;
-      max-width: 90vw;
-      height: 20vmin;
-      max-height: 120px;
-      margin: 1.5rem auto 0 auto;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.08);
-      border: 2px solid #a020f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display: none; /* default is hidden, shown via .show-touchpad */
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+      background: rgba(160,32,240,0.07);
+      /* To not block top status bar or overlays, pointer-events: auto on touch only */
+      pointer-events: none;
+      user-select: none;
+      touch-action: none;
+    }
+    .show-touchpad #touchpad {
+      display: block;
+      pointer-events: auto;
+    }
+    #touchpad.active {
+      background: rgba(160,32,240,0.16);
+    }
+    #touchpadLabel {
+      position: absolute;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       color: #fff;
       font-size: 1.2rem;
       letter-spacing: 1px;
+      opacity: 0.7;
+      pointer-events: none;
       user-select: none;
-      touch-action: none;
-      transition: background 0.2s;
-    }
-    #touchpad.active {
-      background: rgba(160,32,240,0.22);
     }
     #statusBar {
       font-size: 1rem;
@@ -173,11 +184,9 @@
       white-space: nowrap;
     }
     @media (max-width: 550px) {
-      #touchpad {
-        width: 96vw;
-        height: 70px;
-        min-height: 50px;
+      #touchpadLabel {
         font-size: 1rem;
+        top: 58%;
       }
     }
   </style>
@@ -187,8 +196,8 @@
   <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
   <div id="overlay"></div>
 </div>
-<!-- Touchpad area for swipe movement (no arrow keys) -->
-<div id="touchpad">Swipe here to control</div>
+<!-- Touchpad area for swipe movement, only on touch devices -->
+<div id="touchpad"><span id="touchpadLabel">Swipe anywhere to control</span></div>
 
 <div id="statusBar">
   <span id="scoreDisplay">Score: 0</span>
@@ -229,6 +238,18 @@
 <audio id="spacemanSound" src="spaceman.mp3"></audio>
 <script>
 window.onload = function() {
+  // Only show touchpad on touch devices
+  function isTouchDevice() {
+    return (
+      'ontouchstart' in window ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+      (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+    );
+  }
+  if (isTouchDevice()) {
+    document.body.classList.add('show-touchpad');
+  }
+
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   canvas.width = 400;
@@ -522,61 +543,38 @@ window.onload = function() {
     }
   });
 
-  // --- Touchpad swipe logic ---
-  let padStartX, padStartY, padActive = false;
-  touchpad.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1) {
-      padStartX = e.touches[0].clientX;
-      padStartY = e.touches[0].clientY;
-      padActive = true;
-      touchpad.classList.add('active');
-    }
-  });
-  touchpad.addEventListener('touchmove', function(e) {
-    // Prevent scrolling
-    if (padActive) e.preventDefault();
-  }, { passive: false });
-  touchpad.addEventListener('touchend', function(e) {
-    if (!padActive) return;
-    let dx = e.changedTouches[0].clientX - padStartX;
-    let dy = e.changedTouches[0].clientY - padStartY;
-    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 20) setDirection({ x: 1, y: 0 });
-        if (dx < -20) setDirection({ x: -1, y: 0 });
-      } else {
-        if (dy > 20) setDirection({ x: 0, y: 1 });
-        if (dy < -20) setDirection({ x: 0, y: -1 });
+  // --- Touchpad swipe logic (only if shown) ---
+  if (document.body.classList.contains('show-touchpad')) {
+    let padStartX, padStartY, padActive = false;
+    touchpad.addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1) {
+        padStartX = e.touches[0].clientX;
+        padStartY = e.touches[0].clientY;
+        padActive = true;
+        touchpad.classList.add('active');
       }
-    }
-    padActive = false;
-    touchpad.classList.remove('active');
-  });
-
-  // Also allow swipe on canvas itself for convenience (optional)
-  let canStartX, canStartY, canActive = false;
-  canvas.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1) {
-      canStartX = e.touches[0].clientX;
-      canStartY = e.touches[0].clientY;
-      canActive = true;
-    }
-  });
-  canvas.addEventListener('touchend', function(e) {
-    if (!canActive) return;
-    let dx = e.changedTouches[0].clientX - canStartX;
-    let dy = e.changedTouches[0].clientY - canStartY;
-    if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 20) setDirection({ x: 1, y: 0 });
-        if (dx < -20) setDirection({ x: -1, y: 0 });
-      } else {
-        if (dy > 20) setDirection({ x: 0, y: 1 });
-        if (dy < -20) setDirection({ x: 0, y: -1 });
+    });
+    touchpad.addEventListener('touchmove', function(e) {
+      // Prevent scrolling
+      if (padActive) e.preventDefault();
+    }, { passive: false });
+    touchpad.addEventListener('touchend', function(e) {
+      if (!padActive) return;
+      let dx = e.changedTouches[0].clientX - padStartX;
+      let dy = e.changedTouches[0].clientY - padStartY;
+      if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 20) setDirection({ x: 1, y: 0 });
+          if (dx < -20) setDirection({ x: -1, y: 0 });
+        } else {
+          if (dy > 20) setDirection({ x: 0, y: 1 });
+          if (dy < -20) setDirection({ x: 0, y: -1 });
+        }
       }
-    }
-    canActive = false;
-  });
+      padActive = false;
+      touchpad.classList.remove('active');
+    });
+  }
 
   pauseBtn.onclick = togglePause;
   function togglePause() {
@@ -614,15 +612,6 @@ window.onload = function() {
     gameInterval = setInterval(gameLoop, speed);
   };
   canvas.onclick = () => canvas.focus();
-  function resizeCanvas() {
-    const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
-    canvas.style.width = size + "px";
-    canvas.style.height = size + "px";
-    touchpad.style.width = size + "px";
-    // touchpad stays at set height
-  }
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
   window.addEventListener('focus', () => {
     if (paused && lastOverlayMsg !== "PAUSED") showOverlay("PAUSED");
   });
