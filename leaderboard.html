@@ -23,21 +23,6 @@
             </thead>
             <tbody>
                 <!-- Dynamic leaderboard will be inserted here -->
-                <tr>
-                    <td>1</td>
-                    <td>PlayerOne</td>
-                    <td>1000</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>PlayerTwo</td>
-                    <td>900</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>PlayerThree</td>
-                    <td>850</td>
-                </tr>
             </tbody>
         </table>
         <p>Want to see your name here? Play the game and get ranked!</p>
@@ -45,5 +30,51 @@
     <footer>
         <p>Stay tuned for updates and more competitions!</p>
     </footer>
+
+    <!-- JavaScript for Dynamic Leaderboard -->
+    <script>
+        // Example static leaderboard data, this would normally come from your backend
+        const leaderboardData = [
+            { rank: 1, player: 'PlayerOne', score: 1000 },
+            { rank: 2, player: 'PlayerTwo', score: 900 },
+            { rank: 3, player: 'PlayerThree', score: 850 },
+            { rank: 4, player: 'PlayerFour', score: 800 },
+            { rank: 5, player: 'PlayerFive', score: 750 }
+        ];
+
+        // Function to dynamically populate the leaderboard table
+        function updateLeaderboard(data) {
+            const tableBody = document.getElementById('leaderboard-table').getElementsByTagName('tbody')[0];
+            
+            // Clear the table first
+            tableBody.innerHTML = '';
+
+            // Loop through the data and create table rows
+            data.forEach((entry) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `<td>${entry.rank}</td><td>${entry.player}</td><td>${entry.score}</td>`;
+            });
+        }
+
+        // Call the function to populate the leaderboard
+        updateLeaderboard(leaderboardData);
+
+        // Example function to dynamically update the leaderboard with new scores (can be used for future updates)
+        function addNewScore(newPlayer, newScore) {
+            // Add new entry and sort the leaderboard
+            leaderboardData.push({ rank: leaderboardData.length + 1, player: newPlayer, score: newScore });
+            leaderboardData.sort((a, b) => b.score - a.score);  // Sort by score descending
+            leaderboardData.forEach((entry, index) => { entry.rank = index + 1 });  // Reassign ranks
+            
+            // Update the leaderboard table with the new sorted data
+            updateLeaderboard(leaderboardData);
+        }
+
+        // Example: Simulate a new player scoring and adding to leaderboard after a game (this would normally be triggered by backend data)
+        setTimeout(() => {
+            addNewScore('NewPlayer', 950);
+        }, 5000);  // Adds a new score after 5 seconds for demo purposes
+    </script>
 </body>
 </html>
+
