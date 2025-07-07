@@ -183,16 +183,21 @@
   }
 
   function resetGame() {
+    // Reset snake and apple to initial positions
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
     apple = { x: 5, y: 5 };
     score = 0;
     started = false;
-    clearInterval(gameInterval);
     gameOverFlag = false; // Reset game-over flag
+
+    // Clear the canvas to remove old elements
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     gameStatusLine.style.display = "none";
     statusBar.style.display = "block";
     statusBar.childNodes[0].textContent = "Game ready – press arrow key ";
+
+    // Start new game
     gameInterval = setInterval(gameLoop, speed);
     setTimeout(() => canvas.focus(), 100);
     canvas.onclick = () => canvas.focus();
@@ -227,7 +232,7 @@
     } else {
       snake.pop();
     }
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing the next frame
     ctx.font = `${gridSize}px Orbitron`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -250,11 +255,12 @@
   }
 
   function gameOver() {
-    clearInterval(gameInterval);
+    clearInterval(gameInterval); // Stop the game loop
     finalScoreSpan.textContent = `Score: ${score}`;
     statusBar.style.display = "none";
     gameStatusLine.style.display = "flex";
     gameOverFlag = true; // Set game over flag to true
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas when game is over
   }
 
   document.addEventListener("keydown", e => {
