@@ -1,11 +1,293 @@
-<!-- ...head and styles unchanged... -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPACERUN3008 – Listen & Play</title>
+  <script src="https://telegram.org/js/games.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: url('bgobe.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      width: 90vmin;
+      height: 90vmin;
+      max-width: 90vw;
+      max-height: 90vw;
+      background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
+      display: block;
+      box-shadow: 0 0 20px #a020f0;
+      margin: 1rem auto;
+      outline: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    #statusBar {
+      font-size: 1rem;
+      color: white;
+      margin-bottom: 0.5rem;
+      z-index: 3;
+    }
+    #scoreDisplay {
+      font-size: 1.2rem;
+      margin-right: 1.5rem;
+    }
+    #highScoreDisplay {
+      font-size: 1.2rem;
+      margin-left: 1.5rem;
+      color: #a0ffd0;
+    }
+
+    #gameStatusLine {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: white;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 4;
+      position: relative;
+    }
+
+    #finalScore {
+      margin: 0 0.3rem;
+      color: white;
+    }
+
+    #restartBtn, #toggleRadio, #loginBtn, #pauseBtn, #muteBtn {
+      background: none;
+      font-size: 1rem;
+      font-family: 'Orbitron', sans-serif;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      animation: pulse 1.5s infinite ease-in-out;
+      margin: 0 0.3rem;
+    }
+    #speedSelect {
+      background: #181818;
+      color: white;
+      border-radius: 6px;
+      border: 1px solid #a020f0;
+      padding: 0.1rem 0.5rem;
+      font-family: 'Orbitron', sans-serif;
+      margin-left: 0.5rem;
+      font-size: 1rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    a.leaderboard-link {
+      color: white;
+      text-decoration: underline;
+      font-size: 1rem;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.1; }
+      100% { opacity: 1; }
+    }
+
+    #loginPopup {
+      display: none;
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      border: 1px solid #888;
+      padding: 1rem;
+      border-radius: 10px;
+      color: white;
+      z-index: 20;
+      min-width: 250px;
+    }
+
+    #loginPopup button {
+      margin: 0.5rem;
+      font-size: 1rem;
+      background: #333;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #closeLoginPopup {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #overlay {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      border-radius: 16px;
+      font-size: 2rem;
+      z-index: 5;
+      padding: 2rem 3rem;
+      pointer-events: none;
+    }
+
+    #controls {
+      display: none;
+      position: relative;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-top: 0.7rem;
+      pointer-events: none;
+      user-select: none;
+      background: none;
+    }
+    .show-dpad #controls {
+      display: flex;
+    }
+    #dpad {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+    }
+    .dpad-btn {
+      position: absolute;
+      width: 65px;
+      height: 65px;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #a0ffd080;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: all;
+      user-select: none;
+      touch-action: manipulation;
+      transition: background 0.15s;
+      z-index: 1;
+    }
+    .dpad-btn:active {
+      background: #a020f0;
+    }
+    #upBtn    { top: 0;   left: 50%; transform: translate(-50%, 0); }
+    #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
+    #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
+    #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
+    #pauseDpadBtn {
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      background: rgba(255,255,255,0.32);
+      border: 2px solid #a020f0;
+      color: #fff;
+      box-shadow: 0 0 16px #a020f0;
+      z-index: 2;
+    }
+
+    .visually-hidden {
+      position: absolute !important;
+      height: 1px; width: 1px;
+      overflow: hidden;
+      clip: rect(1px 1px 1px 1px);
+      clip: rect(1px, 1px, 1px, 1px);
+      white-space: nowrap;
+    }
+    @media (max-width: 550px) {
+      #controls, #dpad {
+        width: 160px;
+        height: 160px;
+      }
+      .dpad-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Hide pauseBtn in status bar on touch devices */
+    .show-dpad #pauseBtn {
+      display: none !important;
+    }
+  </style>
+</head>
 <body>
 <div style="position:relative;">
   <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
   <div id="overlay"></div>
 </div>
 
-<!-- D-pad and rest of markup unchanged ... -->
+<!-- D-pad controller: shown on touch devices only, always under canvas -->
+<div id="controls" aria-label="Game Controller">
+  <div id="dpad">
+    <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
+    <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
+    <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
+    <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
+    <button id="pauseDpadBtn" class="dpad-btn" aria-label="Pause/Resume">⏯️</button>
+  </div>
+</div>
+
+<div id="statusBar">
+  <span id="scoreDisplay">Score: 0</span>
+  <span id="highScoreDisplay">High Score: 0</span>
+  <button id="pauseBtn" aria-pressed="false" title="Pause/Resume">⏸️</button>
+  <button id="muteBtn" aria-pressed="false" title="Mute/Unmute SFX">🔊</button>
+  <label for="speedSelect" class="visually-hidden">Game Speed</label>
+  <select id="speedSelect" title="Game Speed">
+    <option value="250">Normal</option>
+    <option value="120">Fast</option>
+    <option value="60">Turbo</option>
+  </select>
+  <button id="toggleRadio" aria-pressed="false">Radio ON</button>
+  <button id="loginBtn">LOG IN</button>
+</div>
+
+<div id="gameStatusLine" aria-live="polite">
+  <span>Game over.</span>
+  <span id="finalScore">Score: 0</span>
+  <button id="restartBtn">Play Again</button>
+  <a href="https://games4punks.github.io/spacerun3008/leaderboard.html" class="leaderboard-link" target="_blank" rel="noopener noreferrer">View Leaderboard</a>
+</div>
+
+<div id="loginPopup" aria-modal="true" role="dialog">
+  <span id="closeLoginPopup" tabindex="0" aria-label="Close login popup">&times;</span>
+  <p>Select WAX Wallet</p>
+  <button onclick="alert('Login with Anchor')">Anchor</button>
+  <button onclick="alert('Login with MyCloud')">MyCloud</button>
+  <button onclick="alert('Login with Wombat')">Wombat</button>
+</div>
 
 <audio id="radioStream" loop>
   <source src="http://stream.radiojar.com/2qm1fc5kb" type="audio/mpeg">
@@ -16,11 +298,68 @@
 <audio id="alienSound" src="alien.mp3"></audio>
 
 <script>
-  // ...variables from your previous code...
+  // D-pad visible only on touch devices, always below canvas
+  function isTouchDevice() {
+    return (
+      'ontouchstart' in window ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+      (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+    );
+  }
+  if (isTouchDevice()) {
+    document.body.classList.add('show-dpad');
+  }
 
-  // Add new audio
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 400;
+  canvas.height = 400;
+
+  const gridSize = 20;
+  const tileCount = canvas.width / gridSize;
+  let snake = [{ x: 10, y: 10 }];
+  let direction = { x: 0, y: 0 };
+  let nextDirection = { x: 0, y: 0 };
+  let apple = { x: 5, y: 5 };
+  let score = 0;
+  let highScore = Number(localStorage.getItem('spacerun_highscore') || "0");
+  let started = false;
+  let paused = false;
+  let gameInterval, speed = 250;
+  let gameOverFlag = false;
+  let sfxMuted = false;
+  let touchStartX, touchStartY;
+  let lastOverlayMsg = "";
+
+  const statusBar = document.getElementById("statusBar");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const highScoreDisplay = document.getElementById("highScoreDisplay");
+  const gameStatusLine = document.getElementById("gameStatusLine");
+  const finalScoreSpan = document.getElementById("finalScore");
+  const restartBtn = document.getElementById("restartBtn");
+  const radio = document.getElementById("radioStream");
+  const toggleRadioBtn = document.getElementById("toggleRadio");
+  const explosionSound = document.getElementById("explosionSound");
+  const crashSound = document.getElementById("crashSound");
   const spaceshipSound = document.getElementById("spaceshipSound");
   const alienSound = document.getElementById("alienSound");
+  const loginPopup = document.getElementById("loginPopup");
+  const loginBtn = document.getElementById("loginBtn");
+  const closeLoginPopup = document.getElementById("closeLoginPopup");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const speedSelect = document.getElementById("speedSelect");
+  const overlay = document.getElementById("overlay");
+
+  // D-pad buttons
+  const upBtn = document.getElementById("upBtn");
+  const downBtn = document.getElementById("downBtn");
+  const leftBtn = document.getElementById("leftBtn");
+  const rightBtn = document.getElementById("rightBtn");
+  const pauseDpadBtn = document.getElementById("pauseDpadBtn");
+
+  explosionSound.volume = 0.5;
+  crashSound.volume = 0.5;
   spaceshipSound.volume = 0.5;
   alienSound.volume = 0.5;
 
@@ -251,8 +590,6 @@
     }
   }
 
-  // --- UNCHANGED GAME CODE BELOW ---
-
   function gameOver() {
     clearInterval(gameInterval);
     finalScoreSpan.textContent = `Score: ${score}`;
@@ -284,7 +621,26 @@
     }
   });
 
-  // Touch swipe support and rest of code unchanged...
+  // Touch swipe support
+  canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  });
+  canvas.addEventListener('touchend', function(e) {
+    if (touchStartX === undefined || touchStartY === undefined) return;
+    let dx = e.changedTouches[0].clientX - touchStartX;
+    let dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 20) setDirection({ x: 1, y: 0 }); // right
+      if (dx < -20) setDirection({ x: -1, y: 0 }); // left
+    } else {
+      if (dy > 20) setDirection({ x: 0, y: 1 }); // down
+      if (dy < -20) setDirection({ x: 0, y: -1 }); // up
+    }
+    touchStartX = touchStartY = undefined;
+  });
 
   // D-pad controls (controller cross)
   upBtn.onclick = e => setDirection({ x: 0, y: -1 });
