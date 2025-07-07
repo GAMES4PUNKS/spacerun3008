@@ -280,7 +280,7 @@
 <audio id="spacemanSound" src="spaceman.mp3"></audio>
 <script>
 window.onload = function() {
-  // ...variables...
+  // --- Variables ---
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   canvas.width = 400;
@@ -290,7 +290,6 @@ window.onload = function() {
   let snake = [{ x: 10, y: 10 }];
   let direction = { x: 0, y: 0 };
   let nextDirection = { x: 0, y: 0 };
-  let apple = { x: 5, y: 5 };
   let score = 0;
   let highScore = Number(localStorage.getItem('spacerun_highscore') || "0");
   let started = false;
@@ -334,7 +333,6 @@ window.onload = function() {
   rocketSound.volume = 0.5;
   satelliteSound.volume = 0.5;
   spacemanSound.volume = 0.5;
-  // D-pad visible only on touch devices, always below canvas
   function isTouchDevice() {
     return (
       'ontouchstart' in window ||
@@ -345,120 +343,94 @@ window.onload = function() {
   if (isTouchDevice()) {
     document.body.classList.add('show-dpad');
   }
-  let specialApples = {
-    spaceship: null,
-    alien: null,
-    rocket: null,
-    satellite: null,
-    spaceman: null
-  };
-  function getFreeCell() {
-    let tries = 0;
-    while (tries < 1000) {
-      let x = Math.floor(Math.random() * tileCount);
-      let y = Math.floor(Math.random() * tileCount);
-      if (
-        !snake.some(seg => seg.x === x && seg.y === y) &&
-        !(apple.x === x && apple.y === y) &&
-        (!specialApples.spaceship || !(specialApples.spaceship.x === x && specialApples.spaceship.y === y)) &&
-        (!specialApples.alien || !(specialApples.alien.x === x && specialApples.alien.y === y)) &&
-        (!specialApples.rocket || !(specialApples.rocket.x === x && specialApples.rocket.y === y)) &&
-        (!specialApples.satellite || !(specialApples.satellite.x === x && specialApples.satellite.y === y)) &&
-        (!specialApples.spaceman || !(specialApples.spaceman.x === x && specialApples.spaceman.y === y))
-      ) return {x, y};
-      tries++;
+
+  // --- Apples Data ---
+  // Main invader apple is static; others move.
+  let apples = [
+    { // Main invader apple (static)
+      x: 5, y: 5, emoji: "👾", moveTimer: null, moveInterval: 0, points: 25, sound: explosionSound, type: "main"
+    },
+    { // Spaceship
+      x: 8, y: 8, emoji: "🛸", moveTimer: null, moveInterval: 1000, points: 10, sound: spaceshipSound, type: "spaceship"
+    },
+    { // Alien
+      x: 2, y: 15, emoji: "👽", moveTimer: null, moveInterval: 1500, points: 20, sound: alienSound, type: "alien"
+    },
+    { // Rocket
+      x: 16, y: 7, emoji: "🚀", moveTimer: null, moveInterval: 700, points: 5, sound: rocketSound, type: "rocket"
+    },
+    { // Satellite
+      x: 11, y: 3, emoji: "🛰️", moveTimer: null, moveInterval: 900, points: 3, sound: satelliteSound, type: "satellite"
+    },
+    { // Spaceman (score resets!)
+      x: 14, y: 12, emoji: "🧑‍🚀", moveTimer: null, moveInterval: 600, points: 0, sound: spacemanSound, type: "spaceman"
     }
-    return {x: 0, y: 0};
-  }
-  let spaceshipAppearTimer = null, alienAppearTimer = null, rocketAppearTimer = null, satelliteAppearTimer = null, spacemanAppearTimer = null;
-  function triggerSpaceshipApple() {
-    if (specialApples.spaceship) return;
-    const pos = getFreeCell();
-    specialApples.spaceship = {
-      x: pos.x, y: pos.y, visible: true,
-      timeoutId: setTimeout(() => {
-        specialApples.spaceship = null;
-        scheduleSpaceshipApple();
-      }, 6000)
-    };
-  }
-  function triggerAlienApple() {
-    if (specialApples.alien) return;
-    const pos = getFreeCell();
-    specialApples.alien = {
-      x: pos.x, y: pos.y, visible: true,
-      timeoutId: setTimeout(() => {
-        specialApples.alien = null;
-        scheduleAlienApple();
-      }, 6000)
-    };
-  }
-  function triggerRocketApple() {
-    if (specialApples.rocket) return;
-    const pos = getFreeCell();
-    specialApples.rocket = {
-      x: pos.x, y: pos.y, visible: true,
-      timeoutId: setTimeout(() => {
-        specialApples.rocket = null;
-        scheduleRocketApple();
-      }, 6000)
-    };
-  }
-  function triggerSatelliteApple() {
-    if (specialApples.satellite) return;
-    const pos = getFreeCell();
-    specialApples.satellite = {
-      x: pos.x, y: pos.y, visible: true,
-      timeoutId: setTimeout(() => {
-        specialApples.satellite = null;
-        scheduleSatelliteApple();
-      }, 6000)
-    };
-  }
-  function triggerSpacemanApple() {
-    if (specialApples.spaceman) return;
-    const pos = getFreeCell();
-    specialApples.spaceman = {
-      x: pos.x, y: pos.y, visible: true,
-      timeoutId: setTimeout(() => {
-        specialApples.spaceman = null;
-        scheduleSpacemanApple();
-      }, 2000)
-    };
-  }
-  function scheduleSpaceshipApple() {
-    spaceshipAppearTimer = setTimeout(triggerSpaceshipApple, 7000 + Math.random()*7000);
-  }
-  function scheduleAlienApple() {
-    alienAppearTimer = setTimeout(triggerAlienApple, 30000 + Math.random()*40000);
-  }
-  function scheduleRocketApple() {
-    rocketAppearTimer = setTimeout(triggerRocketApple, 4000 + Math.random()*9000);
-  }
-  function scheduleSatelliteApple() {
-    satelliteAppearTimer = setTimeout(triggerSatelliteApple, 3500 + Math.random()*8000);
-  }
-  function scheduleSpacemanApple() {
-    spacemanAppearTimer = setTimeout(triggerSpacemanApple, 2000 + Math.random()*3000);
-  }
-  function clearSpecialApples() {
-    for (const key of ["spaceship","alien","rocket","satellite","spaceman"]) {
-      if (specialApples[key] && specialApples[key].timeoutId)
-        clearTimeout(specialApples[key].timeoutId);
-      specialApples[key] = null;
+  ];
+
+  function isCellFree(x, y, ignoreIdx=-1) {
+    if (snake.some(seg => seg.x === x && seg.y === y)) return false;
+    for (let i=0; i<apples.length; ++i) {
+      if (i === ignoreIdx) continue;
+      if (apples[i].x === x && apples[i].y === y) return false;
     }
-    if (spaceshipAppearTimer) clearTimeout(spaceshipAppearTimer);
-    if (alienAppearTimer) clearTimeout(alienAppearTimer);
-    if (rocketAppearTimer) clearTimeout(rocketAppearTimer);
-    if (satelliteAppearTimer) clearTimeout(satelliteAppearTimer);
-    if (spacemanAppearTimer) clearTimeout(spacemanAppearTimer);
-    spaceshipAppearTimer = alienAppearTimer = rocketAppearTimer = satelliteAppearTimer = spacemanAppearTimer = null;
+    return true;
   }
+  function getMovingAppleTarget(idx) {
+    const head = snake[0];
+    const apple = apples[idx];
+    let bestDist = -1, best = {x: apple.x, y: apple.y};
+    for (const dir of [
+      {x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0},
+      {x:-1,y:-1},{x:1,y:-1},{x:-1,y:1},{x:1,y:1}
+    ]) {
+      const nx = apple.x + dir.x, ny = apple.y + dir.y;
+      if (nx < 0 || ny < 0 || nx >= tileCount || ny >= tileCount) continue;
+      if (!isCellFree(nx, ny, idx)) continue;
+      let dist = Math.abs(nx-head.x) + Math.abs(ny-head.y);
+      if (apple.type === "spaceman") dist += 2;
+      if (dist > bestDist) {
+        bestDist = dist;
+        best = {x: nx, y: ny};
+      }
+    }
+    return best;
+  }
+  function moveApple(idx) {
+    const apple = apples[idx];
+    if (apple.type === "main") return; // Main apple never moves!
+    const {x, y} = getMovingAppleTarget(idx);
+    apple.x = x;
+    apple.y = y;
+    startAppleTimer(idx);
+  }
+  function startAppleTimer(idx) {
+    const apple = apples[idx];
+    if (apple.moveTimer) clearTimeout(apple.moveTimer);
+    if (apple.type === "main") return;
+    let interval = apple.type === "spaceman"
+      ? 2000 + Math.floor(Math.random()*800)
+      : apple.moveInterval + Math.floor(Math.random()*1000);
+    apple.moveTimer = setTimeout(() => moveApple(idx), interval);
+  }
+  function stopAllAppleTimers() {
+    apples.forEach(a => { if (a.moveTimer) clearTimeout(a.moveTimer); a.moveTimer = null; });
+  }
+  function resetApples() {
+    for (let i=0;i<apples.length;++i) {
+      let tries = 0;
+      do {
+        apples[i].x = Math.floor(Math.random() * tileCount);
+        apples[i].y = Math.floor(Math.random() * tileCount);
+        tries++;
+      } while ((!isCellFree(apples[i].x, apples[i].y, i) || (Math.abs(apples[i].x-10)+Math.abs(apples[i].y-10)<8)) && tries < 1000);
+      startAppleTimer(i);
+    }
+  }
+
   function resetGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
     nextDirection = { x: 0, y: 0 };
-    apple = { x: 5, y: 5 };
     score = 0;
     started = false;
     gameOverFlag = false;
@@ -469,12 +441,8 @@ window.onload = function() {
     statusBar.style.display = "block";
     hideOverlay();
     clearInterval(gameInterval);
-    clearSpecialApples();
-    scheduleSpaceshipApple();
-    scheduleAlienApple();
-    scheduleRocketApple();
-    scheduleSatelliteApple();
-    scheduleSpacemanApple();
+    stopAllAppleTimers();
+    resetApples();
     gameInterval = setInterval(gameLoop, speed);
     setTimeout(() => canvas.focus(), 100);
   }
@@ -487,111 +455,34 @@ window.onload = function() {
       head.y < 0 || head.y >= tileCount ||
       snake.some(seg => seg.x === head.x && seg.y === head.y)
     ) {
-      if (!sfxMuted) {
-        crashSound.currentTime = 0;
-        crashSound.play();
-      }
+      if (!sfxMuted) { crashSound.currentTime = 0; crashSound.play(); }
       gameOver();
       return;
     }
     snake.unshift(head);
     let ate = false;
-    if (head.x === apple.x && head.y === apple.y) {
-      score++;
-      ate = true;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('spacerun_highscore', highScore);
+    for (let i=0;i<apples.length;++i) {
+      const apple = apples[i];
+      if (head.x === apple.x && head.y === apple.y) {
+        if (apple.type === "spaceman") {
+          score = 0;
+          updateHud();
+          if (!sfxMuted) { apple.sound.currentTime = 0; apple.sound.play(); }
+          moveApple(i); // jump away instantly
+          ate = true;
+          break;
+        } else {
+          score += apple.points;
+          if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('spacerun_highscore', highScore);
+          }
+          if (!sfxMuted) { apple.sound.currentTime = 0; apple.sound.play(); }
+          moveApple(i); // jump away instantly (except main apple)
+          ate = true;
+          break;
+        }
       }
-      if (!sfxMuted) {
-        explosionSound.currentTime = 0;
-        explosionSound.play();
-      }
-      do {
-        apple = {
-          x: Math.floor(Math.random() * tileCount),
-          y: Math.floor(Math.random() * tileCount)
-        };
-      } while (
-        snake.some(seg => seg.x === apple.x && seg.y === apple.y) ||
-        (specialApples.spaceship && specialApples.spaceship.x === apple.x && specialApples.spaceship.y === apple.y) ||
-        (specialApples.alien && specialApples.alien.x === apple.x && specialApples.alien.y === apple.y) ||
-        (specialApples.rocket && specialApples.rocket.x === apple.x && specialApples.rocket.y === apple.y) ||
-        (specialApples.satellite && specialApples.satellite.x === apple.x && specialApples.satellite.y === apple.y) ||
-        (specialApples.spaceman && specialApples.spaceman.x === apple.x && specialApples.spaceman.y === apple.y)
-      );
-    }
-    if (specialApples.spaceship && head.x === specialApples.spaceship.x && head.y === specialApples.spaceship.y) {
-      score += 10;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('spacerun_highscore', highScore);
-      }
-      if (!sfxMuted) {
-        spaceshipSound.currentTime = 0;
-        spaceshipSound.play();
-      }
-      clearTimeout(specialApples.spaceship.timeoutId);
-      specialApples.spaceship = null;
-      scheduleSpaceshipApple();
-      ate = true;
-    }
-    if (specialApples.alien && head.x === specialApples.alien.x && head.y === specialApples.alien.y) {
-      score += 20;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('spacerun_highscore', highScore);
-      }
-      if (!sfxMuted) {
-        alienSound.currentTime = 0;
-        alienSound.play();
-      }
-      clearTimeout(specialApples.alien.timeoutId);
-      specialApples.alien = null;
-      scheduleAlienApple();
-      ate = true;
-    }
-    if (specialApples.rocket && head.x === specialApples.rocket.x && head.y === specialApples.rocket.y) {
-      score += 5;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('spacerun_highscore', highScore);
-      }
-      if (!sfxMuted) {
-        rocketSound.currentTime = 0;
-        rocketSound.play();
-      }
-      clearTimeout(specialApples.rocket.timeoutId);
-      specialApples.rocket = null;
-      scheduleRocketApple();
-      ate = true;
-    }
-    if (specialApples.satellite && head.x === specialApples.satellite.x && head.y === specialApples.satellite.y) {
-      score += 3;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('spacerun_highscore', highScore);
-      }
-      if (!sfxMuted) {
-        satelliteSound.currentTime = 0;
-        satelliteSound.play();
-      }
-      clearTimeout(specialApples.satellite.timeoutId);
-      specialApples.satellite = null;
-      scheduleSatelliteApple();
-      ate = true;
-    }
-    if (specialApples.spaceman && head.x === specialApples.spaceman.x && head.y === specialApples.spaceman.y) {
-      score = 0;
-      updateHud();
-      if (!sfxMuted) {
-        spacemanSound.currentTime = 0;
-        spacemanSound.play();
-      }
-      clearTimeout(specialApples.spaceman.timeoutId);
-      specialApples.spaceman = null;
-      scheduleSpacemanApple();
-      ate = true;
     }
     if (!ate) snake.pop();
     updateHud();
@@ -601,48 +492,16 @@ window.onload = function() {
     ctx.textBaseline = "middle";
     snake.forEach((seg, i) => {
       ctx.save();
-      if (i === 0) {
-        ctx.globalAlpha = 1;
-      } else {
-        ctx.globalAlpha = Math.abs(Math.sin((Date.now() + i * 100) / 30));
-      }
+      ctx.globalAlpha = i === 0 ? 1 : Math.abs(Math.sin((Date.now() + i * 100) / 30));
       ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2);
       ctx.restore();
     });
-    ctx.save();
-    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
-    ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2);
-    ctx.restore();
-    if (specialApples.spaceship && specialApples.spaceship.visible) {
+    apples.forEach(apple => {
       ctx.save();
       ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
-      ctx.fillText("🛸", specialApples.spaceship.x * gridSize + gridSize / 2, specialApples.spaceship.y * gridSize + gridSize / 2);
+      ctx.fillText(apple.emoji, apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2);
       ctx.restore();
-    }
-    if (specialApples.alien && specialApples.alien.visible) {
-      ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
-      ctx.fillText("👽", specialApples.alien.x * gridSize + gridSize / 2, specialApples.alien.y * gridSize + gridSize / 2);
-      ctx.restore();
-    }
-    if (specialApples.rocket && specialApples.rocket.visible) {
-      ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
-      ctx.fillText("🚀", specialApples.rocket.x * gridSize + gridSize / 2, specialApples.rocket.y * gridSize + gridSize / 2);
-      ctx.restore();
-    }
-    if (specialApples.satellite && specialApples.satellite.visible) {
-      ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
-      ctx.fillText("🛰️", specialApples.satellite.x * gridSize + gridSize / 2, specialApples.satellite.y * gridSize + gridSize / 2);
-      ctx.restore();
-    }
-    if (specialApples.spaceman && specialApples.spaceman.visible) {
-      ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
-      ctx.fillText("🧑‍🚀", specialApples.spaceman.x * gridSize + gridSize / 2, specialApples.spaceman.y * gridSize + gridSize / 2);
-      ctx.restore();
-    }
+    });
   }
   function updateHud() {
     scoreDisplay.textContent = "Score: " + score;
@@ -691,6 +550,7 @@ window.onload = function() {
   }
   function gameOver() {
     clearInterval(gameInterval);
+    stopAllAppleTimers();
     finalScoreSpan.textContent = `Score: ${score}`;
     updateHud();
     statusBar.style.display = "none";
@@ -699,7 +559,6 @@ window.onload = function() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     showOverlay("GAME OVER");
     setTimeout(hideOverlay, 1800);
-    clearSpecialApples();
   }
   document.addEventListener("keydown", e => {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d"].includes(e.key)) {
