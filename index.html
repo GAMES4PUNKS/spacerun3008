@@ -155,60 +155,88 @@
       pointer-events: none;
     }
 
-    /* Mobile controls at the bottom */
+    /* Game controller cross layout, always visible */
     #controls {
-      display: none;
+      display: flex !important;
       position: fixed;
-      bottom: 10px;
-      width: 100%;
+      left: 50%;
+      bottom: 35px;
+      transform: translateX(-50%);
       z-index: 10;
+      width: 220px;
+      height: 220px;
       justify-content: center;
       align-items: center;
-      flex-wrap: wrap;
       pointer-events: none;
+      background: none;
+      user-select: none;
     }
 
-    #controls .row {
+    #dpad {
+      position: relative;
+      width: 220px;
+      height: 220px;
       display: flex;
       justify-content: center;
-      pointer-events: all;
+      align-items: center;
     }
-
-    #controls button {
-      background: rgba(255, 255, 255, 0.6);
-      border: 1px solid #ffffff;
-      color: white;
-      padding: 20px;
-      margin: 10px;
-      font-size: 28px;
-      width: 80px;
-      height: 80px;
-      border-radius: 10px;
+    .dpad-btn {
+      position: absolute;
+      width: 65px;
+      height: 65px;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 2rem;
+      border-radius: 20px;
       cursor: pointer;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 10px #a0ffd080;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       pointer-events: all;
       user-select: none;
       touch-action: manipulation;
+      transition: background 0.15s;
+      z-index: 1;
+    }
+    .dpad-btn:active {
+      background: #a020f0;
+    }
+    #upBtn    { top: 0;   left: 50%; transform: translate(-50%, 0); }
+    #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
+    #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
+    #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
+    #pauseDpadBtn { /* Center button */
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      background: rgba(255,255,255,0.32);
+      border: 2px solid #a020f0;
+      color: #fff;
+      box-shadow: 0 0 16px #a020f0;
+      z-index: 2;
     }
 
-    .touch-device #controls {
-      display: flex;
-    }
-
-    @media (min-width: 768px) {
-      #controls {
-        display: none !important;
-      }
-    }
     .visually-hidden {
       position: absolute !important;
       height: 1px; width: 1px;
       overflow: hidden;
-      clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+      clip: rect(1px 1px 1px 1px);
       clip: rect(1px, 1px, 1px, 1px);
-      white-space: nowrap; /* added line */
+      white-space: nowrap;
     }
-    /* Removed #scoreHud since it's no longer needed */
+    @media (max-width: 550px) {
+      #controls, #dpad {
+        width: 160px;
+        height: 160px;
+      }
+      .dpad-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -217,16 +245,14 @@
   <div id="overlay"></div>
 </div>
 
-<div id="controls" aria-label="Touch controls">
-  <div class="row">
-    <button id="upBtn" aria-label="Move Up">↑</button>
-  </div>
-  <div class="row">
-    <button id="leftBtn" aria-label="Move Left">←</button>
-    <button id="rightBtn" aria-label="Move Right">→</button>
-  </div>
-  <div class="row">
-    <button id="downBtn" aria-label="Move Down">↓</button>
+<!-- Always visible cross-shaped controller with a pause button in the center -->
+<div id="controls" aria-label="Game Controller">
+  <div id="dpad">
+    <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
+    <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
+    <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
+    <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
+    <button id="pauseDpadBtn" class="dpad-btn" aria-label="Pause/Resume">⏯️</button>
   </div>
 </div>
 
@@ -267,13 +293,13 @@
 <audio id="crashSound" src="crash.mp3"></audio>
 
 <script>
-  // Touch device detection for showing controls
-  function isTouchDevice() {
-    return 'ontouchstart' in window || navigator.maxTouchPoints;
-  }
-  if (isTouchDevice()) {
-    document.body.classList.add('touch-device');
-  }
+  // Touch device detection for showing controls (now always displayed)
+  // function isTouchDevice() {
+  //   return 'ontouchstart' in window || navigator.maxTouchPoints;
+  // }
+  // if (isTouchDevice()) {
+  //   document.body.classList.add('touch-device');
+  // }
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -314,13 +340,19 @@
   const speedSelect = document.getElementById("speedSelect");
   const overlay = document.getElementById("overlay");
 
+  // D-pad buttons
+  const upBtn = document.getElementById("upBtn");
+  const downBtn = document.getElementById("downBtn");
+  const leftBtn = document.getElementById("leftBtn");
+  const rightBtn = document.getElementById("rightBtn");
+  const pauseDpadBtn = document.getElementById("pauseDpadBtn");
+
   explosionSound.volume = 0.5;
   crashSound.volume = 0.5;
 
   function updateHud() {
     scoreDisplay.textContent = "Score: " + score;
     highScoreDisplay.textContent = "High Score: " + highScore;
-    // Removed scoreHud update here
   }
 
   function showOverlay(msg) {
@@ -481,7 +513,7 @@
     }
   });
 
-  // Touch swipe support
+  // Touch swipe support (optional for canvas, but dpad always visible now)
   canvas.addEventListener('touchstart', function(e) {
     if (e.touches.length === 1) {
       touchStartX = e.touches[0].clientX;
@@ -502,11 +534,28 @@
     touchStartX = touchStartY = undefined;
   });
 
-  // Mobile controls
-  document.getElementById("upBtn").onclick = e => setDirection({ x: 0, y: -1 });
-  document.getElementById("downBtn").onclick = e => setDirection({ x: 0, y: 1 });
-  document.getElementById("leftBtn").onclick = e => setDirection({ x: -1, y: 0 });
-  document.getElementById("rightBtn").onclick = e => setDirection({ x: 1, y: 0 });
+  // D-pad controls (controller cross)
+  upBtn.onclick = e => setDirection({ x: 0, y: -1 });
+  downBtn.onclick = e => setDirection({ x: 0, y: 1 });
+  leftBtn.onclick = e => setDirection({ x: -1, y: 0 });
+  rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
+  pauseDpadBtn.onclick = togglePause;
+
+  // Existing pause button in status bar
+  pauseBtn.onclick = togglePause;
+
+  function togglePause() {
+    if (gameOverFlag) return;
+    paused = !paused;
+    pauseBtn.innerHTML = paused ? "▶️" : "⏸️";
+    pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
+    pauseDpadBtn.innerHTML = paused ? "▶️" : "⏯️";
+    if (paused) {
+      showOverlay("PAUSED");
+    } else {
+      hideOverlay();
+    }
+  }
 
   restartBtn.onclick = resetGame;
 
@@ -528,20 +577,6 @@
     muteBtn.textContent = sfxMuted ? "🔇" : "🔊";
     muteBtn.setAttribute("aria-pressed", sfxMuted ? "true" : "false");
   };
-
-  // Pause/Resume
-  function togglePause() {
-    if (gameOverFlag) return;
-    paused = !paused;
-    pauseBtn.innerHTML = paused ? "▶️" : "⏸️";
-    pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
-    if (paused) {
-      showOverlay("PAUSED");
-    } else {
-      hideOverlay();
-    }
-  }
-  pauseBtn.onclick = togglePause;
 
   // Speed select
   speedSelect.value = speed + '';
