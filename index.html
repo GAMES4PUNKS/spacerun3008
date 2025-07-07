@@ -99,8 +99,10 @@
       color: white;
       cursor: pointer;
     }
+
+    /* On-Screen Controls for Mobile and Tablet */
     #controls {
-      display: none;
+      display: none; /* Hidden by default, only visible on touch devices */
       flex-direction: row;
       justify-content: center;
       margin-top: 10px;
@@ -115,6 +117,10 @@
       border-radius: 10px;
     }
 
+    /* Show controls only if touch device is detected */
+    .touch-device #controls {
+      display: flex;
+    }
   </style>
 </head>
 <body>
@@ -194,6 +200,15 @@
   closeLoginPopup.onclick = () => {
     loginPopup.style.display = 'none';
   };
+
+  // Detect if the device is a touch device
+  function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  }
+
+  if (isTouchDevice()) {
+    document.body.classList.add('touch-device'); // Add class to body to show the controls on touch devices
+  }
 
   // Random flicker speed generator
   function getRandomFlickerSpeed() {
@@ -337,6 +352,7 @@
 </script>
 </body>
 </html>
+
 
 
 
