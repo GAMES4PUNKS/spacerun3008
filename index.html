@@ -208,25 +208,10 @@
       clip: rect(1px, 1px, 1px, 1px);
       white-space: nowrap; /* added line */
     }
-    #scoreHud {
-      position: absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.5rem;
-      color: #a0ffd0;
-      background: rgba(0,0,0,0.6);
-      border-radius: 10px;
-      padding: 0.2rem 1rem;
-      z-index: 3;
-      pointer-events: none;
-      user-select: none;
-      font-family: 'Orbitron', sans-serif;
-    }
+    /* Removed #scoreHud since it's no longer needed */
   </style>
 </head>
 <body>
-<div id="scoreHud" aria-live="polite"></div>
 <div style="position:relative;">
   <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
   <div id="overlay"></div>
@@ -328,7 +313,6 @@
   const muteBtn = document.getElementById("muteBtn");
   const speedSelect = document.getElementById("speedSelect");
   const overlay = document.getElementById("overlay");
-  const scoreHud = document.getElementById("scoreHud");
 
   explosionSound.volume = 0.5;
   crashSound.volume = 0.5;
@@ -336,7 +320,7 @@
   function updateHud() {
     scoreDisplay.textContent = "Score: " + score;
     highScoreDisplay.textContent = "High Score: " + highScore;
-    scoreHud.textContent = `Score: ${score} | High: ${highScore}`;
+    // Removed scoreHud update here
   }
 
   function showOverlay(msg) {
