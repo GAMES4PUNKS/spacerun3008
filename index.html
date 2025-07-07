@@ -91,6 +91,14 @@
       border-radius: 6px;
       cursor: pointer;
     }
+    #closeLoginPopup {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -107,10 +115,11 @@
   <span>Game over.</span>
   <span id="finalScore">Score: 0</span>
   <button id="restartBtn">Play Again</button>
-  <a href="https://hodlkong64.github.io/leaderboard/" class="leaderboard-link" target="_blank">View Leaderboard</a>
+  <a href="https://games4punks.github.io/spacerun3008/leaderboard.html" class="leaderboard-link" target="_blank">View Leaderboard</a>
 </div>
 
 <div id="loginPopup">
+  <span id="closeLoginPopup">&times;</span>
   <p>Select WAX Wallet</p>
   <button onclick="alert('Login with Anchor')">Anchor</button>
   <button onclick="alert('Login with MyCloud')">MyCloud</button>
@@ -148,12 +157,17 @@
   const crashSound = document.getElementById("crashSound");
   const loginPopup = document.getElementById("loginPopup");
   const loginBtn = document.getElementById("loginBtn");
+  const closeLoginPopup = document.getElementById("closeLoginPopup");
 
   explosionSound.volume = 0.5;
   crashSound.volume = 0.5;
 
   loginBtn.onclick = () => {
-    loginPopup.style.display = loginPopup.style.display === 'block' ? 'none' : 'block';
+    loginPopup.style.display = 'block';
+  };
+
+  closeLoginPopup.onclick = () => {
+    loginPopup.style.display = 'none';
   };
 
   // Random flicker speed generator
@@ -161,9 +175,9 @@
     return Math.floor(Math.random() * 50) + 30; // Random speed between 30 and 80
   }
 
-  // Function to increase snake speed by 2%
+  // Function to increase snake speed by 0.5%
   function increaseSpeed() {
-    speed = speed * 0.98; // Increase speed by 2%
+    speed = speed * 1.005; // Increase speed by 0.5%
     if (speed < 50) speed = 50; // Minimum speed cap (optional)
   }
 
@@ -290,5 +304,6 @@
 </script>
 </body>
 </html>
+
 
 
