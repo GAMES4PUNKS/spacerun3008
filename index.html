@@ -36,33 +36,37 @@
     #touch-controls-remote {
       display: none; /* shown only on touch devices */
       position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
+      left: 0; right: 0; bottom: 0;
+      width: 100vw;
       pointer-events: none;
-      z-index: 20;
+      z-index: 10;
     }
     .show-touch-remote #touch-controls-remote {
-      display: block;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100vw;
+      /* height: fit-content; */
       pointer-events: none;
+      padding-bottom: max(env(safe-area-inset-bottom, 0), 2vw);
+      /* prevent overlaying top text/buttons */
     }
     .touch-group {
-      position: absolute;
       display: flex;
       flex-direction: column;
-      gap: 1.2em;
+      gap: 1em;
       pointer-events: all;
       user-select: none;
+      margin: 0 2vw 2vw 2vw;
     }
     .touch-group.left-group {
-      left: 2vw;
-      top: 55vh;
-      transform: translateY(-50%);
       align-items: flex-start;
+      justify-content: flex-end;
     }
     .touch-group.right-group {
-      right: 2vw;
-      top: 55vh;
-      transform: translateY(-50%);
       align-items: flex-end;
+      justify-content: flex-end;
     }
     .touch-btn {
       width: 60px;
@@ -85,8 +89,8 @@
       background: #a020f0;
     }
     @media (max-width: 600px) {
-      .touch-btn { width: 48px; height: 48px; font-size: 1.3rem; }
-      .touch-group { gap: 0.7em; }
+      .touch-btn { width: 44px; height: 44px; font-size: 1.15rem; }
+      .touch-group { gap: 0.6em; margin: 0 1vw 1.3vw 1vw; }
     }
     /* Hide pauseBtn on touch device */
     .show-touch-remote #pauseBtn { display: none !important; }
@@ -97,7 +101,7 @@
   <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
   <div id="overlay"></div>
 </div>
-<!-- Remote-style controls for touch devices only -->
+<!-- Remote-style controls for touch devices only, bottom of screen -->
 <div id="touch-controls-remote" aria-label="Touch Remote">
   <div class="touch-group left-group">
     <button id="leftBtn" class="touch-btn" aria-label="Left">←</button>
