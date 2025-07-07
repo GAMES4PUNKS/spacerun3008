@@ -298,6 +298,7 @@
 <audio id="alienSound" src="alien.mp3"></audio>
 
 <script>
+window.onload = function() {
   // D-pad visible only on touch devices, always below canvas
   function isTouchDevice() {
     return (
@@ -590,6 +591,60 @@
     }
   }
 
+  function updateHud() {
+    scoreDisplay.textContent = "Score: " + score;
+    highScoreDisplay.textContent = "High Score: " + highScore;
+  }
+
+  function showOverlay(msg) {
+    overlay.textContent = msg;
+    overlay.style.display = "block";
+    lastOverlayMsg = msg;
+  }
+  function hideOverlay() {
+    overlay.style.display = "none";
+    lastOverlayMsg = "";
+  }
+
+  // Accessibility: close popup with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape" && loginPopup.style.display === 'block') {
+      loginPopup.style.display = 'none';
+    }
+  });
+
+  loginBtn.onclick = () => {
+    loginPopup.style.display = 'block';
+    closeLoginPopup.focus();
+  };
+
+  closeLoginPopup.onclick = () => {
+    loginPopup.style.display = 'none';
+  };
+
+  closeLoginPopup.addEventListener('keydown', e => {
+    if (e.key === "Enter" || e.key === " ") {
+      loginPopup.style.display = 'none';
+    }
+  });
+
+  window.onclick = function(event) {
+    if (event.target === loginPopup) {
+      loginPopup.style.display = 'none';
+    }
+  };
+
+  function setDirection(newDir) {
+    if (
+      (newDir.x !== -direction.x || direction.x === 0) &&
+      (newDir.y !== -direction.y || direction.y === 0)
+    ) {
+      nextDirection = newDir;
+      started = true;
+      if (!paused && !gameOverFlag) hideOverlay();
+    }
+  }
+
   function gameOver() {
     clearInterval(gameInterval);
     finalScoreSpan.textContent = `Score: ${score}`;
@@ -712,6 +767,7 @@
   // Initial setup
   updateHud();
   resetGame();
+}
 </script>
 </body>
 </html>
