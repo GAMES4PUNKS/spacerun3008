@@ -99,11 +99,34 @@
       color: white;
       cursor: pointer;
     }
+    #controls {
+      display: none;
+      flex-direction: row;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    #controls button {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid #ffffff;
+      color: white;
+      padding: 10px;
+      margin: 5px;
+      font-size: 18px;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
 
 <canvas id="gameCanvas"></canvas>
+
+<!-- On-Screen Controls for Mobile -->
+<div id="controls">
+  <button id="upBtn">↑</button>
+  <button id="leftBtn">←</button>
+  <button id="rightBtn">→</button>
+  <button id="downBtn">↓</button>
+</div>
 
 <div id="statusBar">
   Game ready – press arrow key
@@ -313,6 +336,7 @@
 </script>
 </body>
 </html>
+
 
 
 
