@@ -149,6 +149,13 @@
     .touch-device #controls {
       display: flex;
     }
+
+    /* Hide controls on desktops */
+    @media (min-width: 768px) {
+      #controls {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
