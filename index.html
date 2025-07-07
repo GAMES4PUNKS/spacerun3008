@@ -32,198 +32,64 @@
       position: relative;
       z-index: 1;
     }
-    #statusBar {
-      font-size: 1rem;
-      color: white;
-      margin-bottom: 0.5rem;
-      z-index: 3;
-    }
-    #scoreDisplay {
-      font-size: 1.2rem;
-      margin-right: 1.5rem;
-    }
-    #highScoreDisplay {
-      font-size: 1.2rem;
-      margin-left: 1.5rem;
-      color: #a0ffd0;
-    }
-    #gameStatusLine {
-      display: none;
-      margin-top: 0.5rem;
-      font-size: 1rem;
-      color: white;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      z-index: 4;
-      position: relative;
-    }
-    #finalScore {
-      margin: 0 0.3rem;
-      color: white;
-    }
-    #restartBtn, #toggleRadio, #loginBtn, #pauseBtn, #muteBtn {
-      background: none;
-      font-size: 1rem;
-      font-family: 'Orbitron', sans-serif;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      animation: pulse 1.5s infinite ease-in-out;
-      margin: 0 0.3rem;
-    }
-    #speedSelect {
-      background: #181818;
-      color: white;
-      border-radius: 6px;
-      border: 1px solid #a020f0;
-      padding: 0.1rem 0.5rem;
-      font-family: 'Orbitron', sans-serif;
-      margin-left: 0.5rem;
-      font-size: 1rem;
-      outline: none;
-      cursor: pointer;
-    }
-    a.leaderboard-link {
-      color: white;
-      text-decoration: underline;
-      font-size: 1rem;
-    }
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.1; }
-      100% { opacity: 1; }
-    }
-    #loginPopup {
-      display: none;
-      position: absolute;
-      top: 30%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.9);
-      border: 1px solid #888;
-      padding: 1rem;
-      border-radius: 10px;
-      color: white;
+    /* Touch remote controls */
+    #touch-controls-remote {
+      display: none; /* shown only on touch devices */
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
       z-index: 20;
-      min-width: 250px;
     }
-    #loginPopup button {
-      margin: 0.5rem;
-      font-size: 1rem;
-      background: #333;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #closeLoginPopup {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      font-size: 18px;
-      color: white;
-      cursor: pointer;
-    }
-    #overlay {
-      display: none;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      border-radius: 16px;
-      font-size: 2rem;
-      z-index: 5;
-      padding: 2rem 3rem;
+    .show-touch-remote #touch-controls-remote {
+      display: block;
       pointer-events: none;
     }
-    #controls {
-      display: none;
-      position: relative;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      margin-top: 0.7rem;
-      pointer-events: none;
+    .touch-group {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+      pointer-events: all;
       user-select: none;
-      background: none;
     }
-    .show-dpad #controls {
-      display: flex;
+    .touch-group.left-group {
+      left: 2vw;
+      top: 55vh;
+      transform: translateY(-50%);
+      align-items: flex-start;
     }
-    #dpad {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0 auto;
+    .touch-group.right-group {
+      right: 2vw;
+      top: 55vh;
+      transform: translateY(-50%);
+      align-items: flex-end;
     }
-    .dpad-btn {
-      position: absolute;
-      width: 65px;
-      height: 65px;
-      background: rgba(255,255,255,0.18);
+    .touch-btn {
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.13);
       border: 2px solid #fff;
       color: #fff;
       font-size: 2rem;
-      border-radius: 20px;
+      border-radius: 18px;
       cursor: pointer;
       box-shadow: 0 0 10px #a0ffd080;
       display: flex;
       justify-content: center;
       align-items: center;
-      pointer-events: all;
       user-select: none;
       touch-action: manipulation;
       transition: background 0.15s;
-      z-index: 1;
     }
-    .dpad-btn:active {
+    .touch-btn:active {
       background: #a020f0;
     }
-    #upBtn    { top: 0;   left: 50%; transform: translate(-50%, 0); }
-    #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
-    #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
-    #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
-    #pauseDpadBtn {
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.5rem;
-      background: rgba(255,255,255,0.32);
-      border: 2px solid #a020f0;
-      color: #fff;
-      box-shadow: 0 0 16px #a020f0;
-      z-index: 2;
+    @media (max-width: 600px) {
+      .touch-btn { width: 48px; height: 48px; font-size: 1.3rem; }
+      .touch-group { gap: 0.7em; }
     }
-    .visually-hidden {
-      position: absolute !important;
-      height: 1px; width: 1px;
-      overflow: hidden;
-      clip: rect(1px 1px 1px 1px);
-      clip: rect(1px, 1px, 1px, 1px);
-      white-space: nowrap;
-    }
-    @media (max-width: 550px) {
-      #controls, #dpad {
-        width: 160px;
-        height: 160px;
-      }
-      .dpad-btn {
-        width: 46px;
-        height: 46px;
-        font-size: 1.2rem;
-      }
-    }
-    .show-dpad #pauseBtn {
-      display: none !important;
-    }
+    /* Hide pauseBtn on touch device */
+    .show-touch-remote #pauseBtn { display: none !important; }
   </style>
 </head>
 <body>
@@ -231,13 +97,15 @@
   <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
   <div id="overlay"></div>
 </div>
-<div id="controls" aria-label="Game Controller">
-  <div id="dpad">
-    <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
-    <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
-    <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
-    <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
-    <button id="pauseDpadBtn" class="dpad-btn" aria-label="Pause/Resume">⏯️</button>
+<!-- Remote-style controls for touch devices only -->
+<div id="touch-controls-remote" aria-label="Touch Remote">
+  <div class="touch-group left-group">
+    <button id="leftBtn" class="touch-btn" aria-label="Left">←</button>
+    <button id="rightBtn" class="touch-btn" aria-label="Right">→</button>
+  </div>
+  <div class="touch-group right-group">
+    <button id="upBtn" class="touch-btn" aria-label="Up">↑</button>
+    <button id="downBtn" class="touch-btn" aria-label="Down">↓</button>
   </div>
 </div>
 <div id="statusBar">
@@ -279,6 +147,7 @@
 <audio id="spacemanSound" src="spaceman.mp3"></audio>
 <script>
 window.onload = function() {
+  // Show remote controls only on touch devices
   function isTouchDevice() {
     return (
       'ontouchstart' in window ||
@@ -287,7 +156,7 @@ window.onload = function() {
     );
   }
   if (isTouchDevice()) {
-    document.body.classList.add('show-dpad');
+    document.body.classList.add('show-touch-remote');
   }
 
   const canvas = document.getElementById("gameCanvas");
@@ -307,7 +176,6 @@ window.onload = function() {
   let gameInterval, speed = 250;
   let gameOverFlag = false;
   let sfxMuted = false;
-  let touchStartX, touchStartY;
   let lastOverlayMsg = "";
 
   const statusBar = document.getElementById("statusBar");
@@ -332,11 +200,11 @@ window.onload = function() {
   const muteBtn = document.getElementById("muteBtn");
   const speedSelect = document.getElementById("speedSelect");
   const overlay = document.getElementById("overlay");
+  // Touch remote controls
   const upBtn = document.getElementById("upBtn");
   const downBtn = document.getElementById("downBtn");
   const leftBtn = document.getElementById("leftBtn");
   const rightBtn = document.getElementById("rightBtn");
-  const pauseDpadBtn = document.getElementById("pauseDpadBtn");
 
   explosionSound.volume = 0.5;
   crashSound.volume = 0.5;
@@ -346,7 +214,6 @@ window.onload = function() {
   satelliteSound.volume = 0.5;
   spacemanSound.volume = 0.5;
 
-  // Apple configs for timing and points
   const appleConfigs = [
     { name: "invader", emoji: "👾", points: 25, minDelay: 5000, maxDelay: 12000 },
     { name: "alien", emoji: "👽", points: 20, minDelay: 16000, maxDelay: 30000 },
@@ -587,42 +454,27 @@ window.onload = function() {
       resetGame();
     }
   });
-  canvas.addEventListener('touchstart', function(e) {
-    if (e.touches.length === 1) {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }
-  });
-  canvas.addEventListener('touchend', function(e) {
-    if (touchStartX === undefined || touchStartY === undefined) return;
-    let dx = e.changedTouches[0].clientX - touchStartX;
-    let dy = e.changedTouches[0].clientY - touchStartY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 20) setDirection({ x: 1, y: 0 });
-      if (dx < -20) setDirection({ x: -1, y: 0 });
-    } else {
-      if (dy > 20) setDirection({ x: 0, y: 1 });
-      if (dy < -20) setDirection({ x: 0, y: -1 });
-    }
-    touchStartX = touchStartY = undefined;
-  });
-  upBtn.onclick = e => setDirection({ x: 0, y: -1 });
-  downBtn.onclick = e => setDirection({ x: 0, y: 1 });
-  leftBtn.onclick = e => setDirection({ x: -1, y: 0 });
-  rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
-  pauseDpadBtn.onclick = togglePause;
+
+  // Attach touch remote events only on touch devices
+  if (isTouchDevice()) {
+    upBtn.onclick = e => setDirection({ x: 0, y: -1 });
+    downBtn.onclick = e => setDirection({ x: 0, y: 1 });
+    leftBtn.onclick = e => setDirection({ x: -1, y: 0 });
+    rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
+    // Prevent iOS highlight
+    [upBtn, downBtn, leftBtn, rightBtn].forEach(btn => {
+      btn.addEventListener('touchstart', e => e.preventDefault(), {passive: false});
+    });
+  }
+
   pauseBtn.onclick = togglePause;
   function togglePause() {
     if (gameOverFlag) return;
     paused = !paused;
     pauseBtn.innerHTML = paused ? "▶️" : "⏸️";
     pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
-    pauseDpadBtn.innerHTML = paused ? "▶️" : "⏯️";
-    if (paused) {
-      showOverlay("PAUSED");
-    } else {
-      hideOverlay();
-    }
+    if (paused) showOverlay("PAUSED");
+    else hideOverlay();
   }
   restartBtn.onclick = resetGame;
   toggleRadioBtn.onclick = () => {
