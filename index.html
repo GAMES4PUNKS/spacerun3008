@@ -550,10 +550,15 @@ window.onload = function() {
     lastOverlayMsg = "";
   }
   function setDirection(newDir) {
-    // Allow all reversals (no restriction)
-    nextDirection = newDir;
-    started = true;
-    if (!paused && !gameOverFlag) hideOverlay();
+    // Classic snake: block instant reversal except when stopped (direction.x/y === 0)
+    if (
+      (newDir.x !== -direction.x || direction.x === 0) &&
+      (newDir.y !== -direction.y || direction.y === 0)
+    ) {
+      nextDirection = newDir;
+      started = true;
+      if (!paused && !gameOverFlag) hideOverlay();
+    }
   }
   function gameOver() {
     clearInterval(gameInterval);
