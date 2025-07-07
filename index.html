@@ -155,7 +155,6 @@
       pointer-events: none;
     }
 
-    /* Game controller cross layout, hidden by default; shown for touch devices via JS */
     #controls {
       display: none;
       position: relative;
@@ -235,6 +234,11 @@
         height: 46px;
         font-size: 1.2rem;
       }
+    }
+
+    /* Hide pauseBtn in status bar on touch devices */
+    .show-dpad #pauseBtn {
+      display: none !important;
     }
   </style>
 </head>
@@ -544,7 +548,7 @@
   rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
   pauseDpadBtn.onclick = togglePause;
 
-  // Existing pause button in status bar
+  // Existing pause button in status bar (hidden on touch by CSS)
   pauseBtn.onclick = togglePause;
 
   function togglePause() {
