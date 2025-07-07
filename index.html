@@ -23,9 +23,9 @@
 
     canvas {
       width: 90vmin;
-      height: 90vmin;
+      height: 70vmin; /* Reduce the height to leave space for controls */
       max-width: 90vw;
-      max-height: 90vh;
+      max-height: 70vh; /* Ensure it fits nicely */
       background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
       display: block;
       box-shadow: 0 0 20px #a020f0;
@@ -117,7 +117,7 @@
       align-items: center;
       justify-content: center;
       position: absolute;
-      bottom: 50px;
+      bottom: 20px; /* Adjust the position further to create more space */
       width: 100%;
     }
 
@@ -148,6 +148,7 @@
     .touch-device #controls {
       display: flex;
     }
+
   </style>
 </head>
 <body>
@@ -235,25 +236,6 @@
     loginPopup.style.display = 'none';
   };
 
-  // Detect if the device is a touch device
-  function isTouchDevice() {
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  }
-
-  if (isTouchDevice()) {
-    document.body.classList.add('touch-device');
-  }
-
-  // Random flicker speed generator
-  function getRandomFlickerSpeed() {
-    return Math.floor(Math.random() * 50) + 30;
-  }
-
-  function increaseSpeed() {
-    speed = speed * 1.005;
-    if (speed < 50) speed = 50;
-  }
-
   function resetGame() {
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
@@ -270,13 +252,6 @@
     gameInterval = setInterval(gameLoop, speed);
     setTimeout(() => canvas.focus(), 100);
     canvas.onclick = () => canvas.focus();
-    setInterval(() => {
-      if (speed > 50) {
-        speed *= 0.98;
-        clearInterval(gameInterval);
-        gameInterval = setInterval(gameLoop, speed);
-      }
-    }, 60000);
   }
 
   function gameLoop() {
@@ -297,26 +272,23 @@
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount)
       };
-      increaseSpeed();
     } else {
       snake.pop();
     }
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
     ctx.font = `${gridSize}px Orbitron`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
     snake.forEach((seg, i) => {
-      const delay = getRandomFlickerSpeed();
       ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + delay) / 30));
+      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + i * 100) / 30));
       ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2);
       ctx.restore();
     });
 
     ctx.save();
-    const appleFlickerSpeed = getRandomFlickerSpeed();
-    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / appleFlickerSpeed));
+    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / 30));
     ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2);
     ctx.restore();
   }
