@@ -476,10 +476,14 @@
     ctx.font = `${gridSize}px Orbitron`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    // Draw snake
+    // Draw snake: head is not flickering, rest flicker
     snake.forEach((seg, i) => {
       ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + i * 100) / 30));
+      if (i === 0) {
+        ctx.globalAlpha = 1; // No flicker for head
+      } else {
+        ctx.globalAlpha = Math.abs(Math.sin((Date.now() + i * 100) / 30));
+      }
       ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2);
       ctx.restore();
     });
