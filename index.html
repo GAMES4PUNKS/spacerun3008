@@ -176,7 +176,7 @@
   let score = 0;
   let started = false;
   let gameInterval, speed = 250;
-  let gameOverFlag = false; // New flag to handle game-over state
+  let gameOverFlag = false;
 
   const statusBar = document.getElementById("statusBar");
   const gameStatusLine = document.getElementById("gameStatusLine");
@@ -207,36 +207,32 @@
   }
 
   if (isTouchDevice()) {
-    document.body.classList.add('touch-device'); // Add class to body to show the controls on touch devices
+    document.body.classList.add('touch-device');
   }
 
   // Random flicker speed generator
   function getRandomFlickerSpeed() {
-    return Math.floor(Math.random() * 50) + 30; // Random speed between 30 and 80
+    return Math.floor(Math.random() * 50) + 30;
   }
 
-  // Function to increase snake speed by 0.5%
   function increaseSpeed() {
-    speed = speed * 1.005; // Increase speed by 0.5%
-    if (speed < 50) speed = 50; // Minimum speed cap (optional)
+    speed = speed * 1.005;
+    if (speed < 50) speed = 50;
   }
 
   function resetGame() {
-    // Reset snake and apple to initial positions
     snake = [{ x: 10, y: 10 }];
     direction = { x: 0, y: 0 };
     apple = { x: 5, y: 5 };
     score = 0;
     started = false;
-    gameOverFlag = false; // Reset game-over flag
+    gameOverFlag = false;
 
-    // Clear the canvas to remove old elements
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     gameStatusLine.style.display = "none";
     statusBar.style.display = "block";
     statusBar.childNodes[0].textContent = "Game ready – press arrow key ";
 
-    // Start new game
     gameInterval = setInterval(gameLoop, speed);
     setTimeout(() => canvas.focus(), 100);
     canvas.onclick = () => canvas.focus();
@@ -250,7 +246,7 @@
   }
 
   function gameLoop() {
-    if (!started || gameOverFlag) return; // Prevent game loop from running when game is over
+    if (!started || gameOverFlag) return;
     const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
     if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snake.some(seg => seg.x === head.x && seg.y === head.y)) {
       crashSound.currentTime = 0;
@@ -267,39 +263,37 @@
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount)
       };
-      increaseSpeed(); // Increase speed every time the apple is eaten
+      increaseSpeed();
     } else {
       snake.pop();
     }
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing the next frame
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${gridSize}px Orbitron`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // Draw the snake with randomized flicker speed (using ✨ emoji)
     snake.forEach((seg, i) => {
-      const delay = getRandomFlickerSpeed(); // Random flicker speed for each segment
+      const delay = getRandomFlickerSpeed();
       ctx.save();
-      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + delay) / 30)); // Flickering effect
-      ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2); // Snake emoji
+      ctx.globalAlpha = Math.abs(Math.sin((Date.now() + delay) / 30));
+      ctx.fillText("✨", seg.x * gridSize + gridSize / 2, seg.y * gridSize + gridSize / 2);
       ctx.restore();
     });
 
-    // Draw the apple with randomized flicker speed (using 👾 emoji)
     ctx.save();
-    const appleFlickerSpeed = getRandomFlickerSpeed(); // Random flicker speed for the apple
-    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / appleFlickerSpeed)); // Flickering effect
-    ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2); // Apple emoji
+    const appleFlickerSpeed = getRandomFlickerSpeed();
+    ctx.globalAlpha = Math.abs(Math.sin(Date.now() / appleFlickerSpeed));
+    ctx.fillText("👾", apple.x * gridSize + gridSize / 2, apple.y * gridSize + gridSize / 2);
     ctx.restore();
   }
 
   function gameOver() {
-    clearInterval(gameInterval); // Stop the game loop
+    clearInterval(gameInterval);
     finalScoreSpan.textContent = `Score: ${score}`;
     statusBar.style.display = "none";
     gameStatusLine.style.display = "flex";
-    gameOverFlag = true; // Set game over flag to true
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas when game is over
+    gameOverFlag = true;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   document.addEventListener("keydown", e => {
@@ -313,6 +307,12 @@
     if (e.key === "ArrowRight" && direction.x === 0) direction = { x: 1, y: 0 };
   });
 
+  // On-screen control buttons for touch devices
+  document.getElementById("upBtn").onclick = () => direction = { x: 0, y: -1 };
+  document.getElementById("downBtn").onclick = () => direction = { x: 0, y: 1 };
+  document.getElementById("leftBtn").onclick = () => direction = { x: -1, y: 0 };
+  document.getElementById("rightBtn").onclick = () => direction = { x: 1, y: 0 };
+
   restartBtn.onclick = resetGame;
 
   toggleRadioBtn.onclick = () => {
@@ -325,33 +325,11 @@
     }
   };
 
-  let touchStartX = null, touchStartY = null;
-  canvas.addEventListener("touchstart", e => {
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-  });
-  canvas.addEventListener("touchend", e => {
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 0 && direction.x === 0) direction = { x: 1, y: 0 };
-      if (dx < 0 && direction.x === 0) direction = { x: -1, y: 0 };
-    } else {
-      if (dy > 0 && direction.y === 0) direction = { x: 0, y: 1 };
-      if (dy < 0 && direction.y === 0) direction = { x: 0, y: -1 };
-    }
-    if (!started) {
-      started = true;
-      statusBar.childNodes[0].textContent = "Game running... ";
-    }
-  });
-
   resetGame();
 </script>
 </body>
 </html>
+
 
 
 
