@@ -22,10 +22,10 @@
     }
 
     canvas {
-      width: 90vmin;
-      height: 80vmin;
+      width: 90vmin; /* Keep canvas responsive */
+      height: 90vmin; /* Maintain square aspect ratio */
       max-width: 90vw;
-      max-height: 80vh;
+      max-height: 90vw;
       background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
       display: block;
       box-shadow: 0 0 20px #a020f0;
@@ -114,7 +114,7 @@
     #controls {
       display: none;
       position: absolute;
-      bottom: 20px;
+      bottom: 10px;
       width: 100%;
       z-index: 10;
       justify-content: center;
