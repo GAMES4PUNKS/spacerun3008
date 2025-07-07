@@ -27,43 +27,10 @@
       background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
       display: block;
       box-shadow: 0 0 20px #a020f0;
-      margin: 1rem auto 0 auto;
+      margin: 1rem auto;
       outline: none;
       position: relative;
       z-index: 1;
-    }
-    #touchpad {
-      display: none; /* default is hidden, shown via .show-touchpad */
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 10;
-      background: rgba(160,32,240,0.07);
-      /* To not block top status bar or overlays, pointer-events: auto on touch only */
-      pointer-events: none;
-      user-select: none;
-      touch-action: none;
-    }
-    .show-touchpad #touchpad {
-      display: block;
-      pointer-events: auto;
-    }
-    #touchpad.active {
-      background: rgba(160,32,240,0.16);
-    }
-    #touchpadLabel {
-      position: absolute;
-      top: 60%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
-      opacity: 0.7;
-      pointer-events: none;
-      user-select: none;
     }
     #statusBar {
       font-size: 1rem;
@@ -175,6 +142,66 @@
       padding: 2rem 3rem;
       pointer-events: none;
     }
+    #controls {
+      display: none;
+      position: relative;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin-top: 0.7rem;
+      pointer-events: none;
+      user-select: none;
+      background: none;
+    }
+    .show-dpad #controls {
+      display: flex;
+    }
+    #dpad {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+    }
+    .dpad-btn {
+      position: absolute;
+      width: 65px;
+      height: 65px;
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #a0ffd080;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: all;
+      user-select: none;
+      touch-action: manipulation;
+      transition: background 0.15s;
+      z-index: 1;
+    }
+    .dpad-btn:active {
+      background: #a020f0;
+    }
+    #upBtn    { top: 0;   left: 50%; transform: translate(-50%, 0); }
+    #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
+    #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
+    #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
+    #pauseDpadBtn {
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      background: rgba(255,255,255,0.32);
+      border: 2px solid #a020f0;
+      color: #fff;
+      box-shadow: 0 0 16px #a020f0;
+      z-index: 2;
+    }
     .visually-hidden {
       position: absolute !important;
       height: 1px; width: 1px;
@@ -184,10 +211,18 @@
       white-space: nowrap;
     }
     @media (max-width: 550px) {
-      #touchpadLabel {
-        font-size: 1rem;
-        top: 58%;
+      #controls, #dpad {
+        width: 160px;
+        height: 160px;
       }
+      .dpad-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+      }
+    }
+    .show-dpad #pauseBtn {
+      display: none !important;
     }
   </style>
 </head>
@@ -196,9 +231,15 @@
   <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
   <div id="overlay"></div>
 </div>
-<!-- Touchpad area for swipe movement, only on touch devices -->
-<div id="touchpad"><span id="touchpadLabel">Swipe anywhere to control</span></div>
-
+<div id="controls" aria-label="Game Controller">
+  <div id="dpad">
+    <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
+    <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
+    <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
+    <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
+    <button id="pauseDpadBtn" class="dpad-btn" aria-label="Pause/Resume">⏯️</button>
+  </div>
+</div>
 <div id="statusBar">
   <span id="scoreDisplay">Score: 0</span>
   <span id="highScoreDisplay">High Score: 0</span>
@@ -238,7 +279,6 @@
 <audio id="spacemanSound" src="spaceman.mp3"></audio>
 <script>
 window.onload = function() {
-  // Only show touchpad on touch devices
   function isTouchDevice() {
     return (
       'ontouchstart' in window ||
@@ -247,7 +287,7 @@ window.onload = function() {
     );
   }
   if (isTouchDevice()) {
-    document.body.classList.add('show-touchpad');
+    document.body.classList.add('show-dpad');
   }
 
   const canvas = document.getElementById("gameCanvas");
@@ -267,6 +307,7 @@ window.onload = function() {
   let gameInterval, speed = 250;
   let gameOverFlag = false;
   let sfxMuted = false;
+  let touchStartX, touchStartY;
   let lastOverlayMsg = "";
 
   const statusBar = document.getElementById("statusBar");
@@ -291,7 +332,11 @@ window.onload = function() {
   const muteBtn = document.getElementById("muteBtn");
   const speedSelect = document.getElementById("speedSelect");
   const overlay = document.getElementById("overlay");
-  const touchpad = document.getElementById("touchpad");
+  const upBtn = document.getElementById("upBtn");
+  const downBtn = document.getElementById("downBtn");
+  const leftBtn = document.getElementById("leftBtn");
+  const rightBtn = document.getElementById("rightBtn");
+  const pauseDpadBtn = document.getElementById("pauseDpadBtn");
 
   explosionSound.volume = 0.5;
   crashSound.volume = 0.5;
@@ -542,46 +587,37 @@ window.onload = function() {
       resetGame();
     }
   });
-
-  // --- Touchpad swipe logic (only if shown) ---
-  if (document.body.classList.contains('show-touchpad')) {
-    let padStartX, padStartY, padActive = false;
-    touchpad.addEventListener('touchstart', function(e) {
-      if (e.touches.length === 1) {
-        padStartX = e.touches[0].clientX;
-        padStartY = e.touches[0].clientY;
-        padActive = true;
-        touchpad.classList.add('active');
-      }
-    });
-    touchpad.addEventListener('touchmove', function(e) {
-      // Prevent scrolling
-      if (padActive) e.preventDefault();
-    }, { passive: false });
-    touchpad.addEventListener('touchend', function(e) {
-      if (!padActive) return;
-      let dx = e.changedTouches[0].clientX - padStartX;
-      let dy = e.changedTouches[0].clientY - padStartY;
-      if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-          if (dx > 20) setDirection({ x: 1, y: 0 });
-          if (dx < -20) setDirection({ x: -1, y: 0 });
-        } else {
-          if (dy > 20) setDirection({ x: 0, y: 1 });
-          if (dy < -20) setDirection({ x: 0, y: -1 });
-        }
-      }
-      padActive = false;
-      touchpad.classList.remove('active');
-    });
-  }
-
+  canvas.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  });
+  canvas.addEventListener('touchend', function(e) {
+    if (touchStartX === undefined || touchStartY === undefined) return;
+    let dx = e.changedTouches[0].clientX - touchStartX;
+    let dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 20) setDirection({ x: 1, y: 0 });
+      if (dx < -20) setDirection({ x: -1, y: 0 });
+    } else {
+      if (dy > 20) setDirection({ x: 0, y: 1 });
+      if (dy < -20) setDirection({ x: 0, y: -1 });
+    }
+    touchStartX = touchStartY = undefined;
+  });
+  upBtn.onclick = e => setDirection({ x: 0, y: -1 });
+  downBtn.onclick = e => setDirection({ x: 0, y: 1 });
+  leftBtn.onclick = e => setDirection({ x: -1, y: 0 });
+  rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
+  pauseDpadBtn.onclick = togglePause;
   pauseBtn.onclick = togglePause;
   function togglePause() {
     if (gameOverFlag) return;
     paused = !paused;
     pauseBtn.innerHTML = paused ? "▶️" : "⏸️";
     pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
+    pauseDpadBtn.innerHTML = paused ? "▶️" : "⏯️";
     if (paused) {
       showOverlay("PAUSED");
     } else {
@@ -612,6 +648,13 @@ window.onload = function() {
     gameInterval = setInterval(gameLoop, speed);
   };
   canvas.onclick = () => canvas.focus();
+  function resizeCanvas() {
+    const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+    canvas.style.width = size + "px";
+    canvas.style.height = size + "px";
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
   window.addEventListener('focus', () => {
     if (paused && lastOverlayMsg !== "PAUSED") showOverlay("PAUSED");
   });
