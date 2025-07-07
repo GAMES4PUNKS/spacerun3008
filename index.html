@@ -19,13 +19,14 @@
       align-items: center;
       min-height: 100vh;
       overflow-x: hidden;
+      padding-bottom: 100px; /* To ensure space for controls */
     }
 
     canvas {
       width: 90vmin;
-      height: 70vmin; /* Adjusted to leave space for controls */
+      height: 60vmin; /* Adjusted height */
       max-width: 90vw;
-      max-height: 70vh;
+      max-height: 60vh;
       background: url('moshed-2021-11-29-0-39-58.gif') center/cover no-repeat;
       display: block;
       box-shadow: 0 0 20px #a020f0;
@@ -110,16 +111,15 @@
       cursor: pointer;
     }
 
-    /* Controls below the canvas for mobile */
+    /* Controls section (only visible on mobile) */
     #controls {
       display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       position: absolute;
       bottom: 20px;
       width: 100%;
       z-index: 10;
+      justify-content: center;
+      align-items: center;
     }
 
     #controls button {
@@ -141,16 +141,12 @@
       justify-content: center;
     }
 
-    #controls .row button {
-      margin: 5px;
-    }
-
-    /* Show controls only if touch device is detected */
+    /* Make the controls visible only for touch devices (and hide on desktop) */
     .touch-device #controls {
       display: flex;
     }
 
-    /* Hide controls on desktops */
+    /* Hide controls on desktop */
     @media (min-width: 768px) {
       #controls {
         display: none !important;
@@ -162,9 +158,8 @@
 
 <canvas id="gameCanvas"></canvas>
 
-<!-- Controls -->
-<div id="controls">
-  <!-- Arrow keys in cross layout -->
+<!-- Controls for mobile -->
+<div id="controls" class="touch-device">
   <div class="row">
     <button id="upBtn">↑</button>
   </div>
