@@ -19,6 +19,9 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
+    #main-content {
+      width: 100%;
+    }
     canvas {
       width: 90vmin;
       height: 90vmin;
@@ -32,38 +35,56 @@
       position: relative;
       z-index: 1;
     }
-    #statusBar {
-      font-size: 1rem;
-      color: white;
-      margin-bottom: 0.5rem;
-      z-index: 3;
-    }
-    #scoreDisplay {
-      font-size: 1.2rem;
-      margin-right: 1.5rem;
-    }
-    #highScoreDisplay {
-      font-size: 1.2rem;
-      margin-left: 1.5rem;
-      color: #a0ffd0;
-    }
-    #gameStatusLine {
-      display: none;
-      margin-top: 0.5rem;
-      font-size: 1rem;
-      color: white;
-      flex-wrap: wrap;
+    /* Status bar split for touch */
+    #statusBarRow1,
+    #statusBarRow2 {
+      display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.5rem;
-      z-index: 4;
-      position: relative;
+      gap: 0.7em;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      white-space: nowrap;
+      width: 100%;
     }
-    #finalScore {
-      margin: 0 0.3rem;
+    #statusBarRow1 {
+      font-size: 1.1rem;
+      margin-bottom: 0.15em;
+    }
+    #statusBarRow2 {
+      font-size: 1.1rem;
+      margin-bottom: 0.6em;
+    }
+    /* Desktop default: show combined bar, hide split bars */
+    #statusBarCombined {
+      display: flex;
+      font-size: 1rem;
       color: white;
+      margin-bottom: 0.7em;
+      z-index: 3;
+      justify-content: center;
+      align-items: center;
+      gap: 0.7em;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      white-space: nowrap;
+      width: 100%;
     }
-    #restartBtn, #toggleRadio, #loginBtn, #pauseBtn, #muteBtn {
+    .show-dpad #statusBarCombined { display: none; }
+    .show-dpad #statusBarRow1, .show-dpad #statusBarRow2 { display: flex; }
+    #statusBarRow1, #statusBarRow2 { display: none; }
+    /* Buttons and text styles (shared for both modes) */
+    #statusBarCombined span, #statusBarRow1 span, #statusBarRow2 span {
+      font-size: 1.1rem;
+      margin: 0 0.6em;
+      white-space: nowrap;
+    }
+    #statusBarCombined #highScoreDisplay,
+    #statusBarRow1 #highScoreDisplayTouch {
+      color: #a0ffd0;
+    }
+    #statusBarCombined button, #statusBarRow1 button, #statusBarRow2 button,
+    #statusBarCombined select, #statusBarRow1 select, #statusBarRow2 select {
       background: none;
       font-size: 1rem;
       font-family: 'Orbitron', sans-serif;
@@ -73,8 +94,9 @@
       cursor: pointer;
       animation: pulse 1.5s infinite ease-in-out;
       margin: 0 0.3rem;
+      outline: none;
     }
-    #speedSelect {
+    #statusBarCombined select, #statusBarRow2 select {
       background: #181818;
       color: white;
       border-radius: 6px;
@@ -95,6 +117,22 @@
       0% { opacity: 1; }
       50% { opacity: 0.1; }
       100% { opacity: 1; }
+    }
+    #gameStatusLine {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      color: white;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 4;
+      position: relative;
+    }
+    #finalScore {
+      margin: 0 0.3rem;
+      color: white;
     }
     #loginPopup {
       display: none;
@@ -142,65 +180,56 @@
       padding: 2rem 3rem;
       pointer-events: none;
     }
-    #controls {
+    /* D-pad grid - only on touch devices */
+    #dpad-area {
       display: none;
-      position: relative;
-      justify-content: center;
-      align-items: center;
       width: 100%;
-      margin-top: 0.7rem;
-      pointer-events: none;
-      user-select: none;
-      background: none;
-    }
-    .show-dpad #controls {
-      display: flex;
-    }
-    #dpad {
-      position: relative;
-      width: 220px;
-      height: 220px;
-      display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 auto;
+      margin: 2em 0 1em 0;
+    }
+    .show-dpad #dpad-area {
+      display: flex;
+    }
+    #dpad-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1.1em;
     }
     .dpad-btn {
-      position: absolute;
-      width: 65px;
-      height: 65px;
-      background: rgba(255,255,255,0.18);
-      border: 2px solid #fff;
+      width: 94px;
+      height: 94px;
+      background: rgba(32,32,32,0.7);
+      border: 3px solid #a0ffd0;
       color: #fff;
-      font-size: 2rem;
-      border-radius: 20px;
+      font-size: 2.7rem;
+      border-radius: 24px;
       cursor: pointer;
-      box-shadow: 0 0 10px #a0ffd080;
+      box-shadow: 0 0 18px #a0ffd080;
       display: flex;
       justify-content: center;
       align-items: center;
-      pointer-events: all;
       user-select: none;
       touch-action: manipulation;
-      transition: background 0.15s;
-      z-index: 1;
+      transition: background 0.15s, border 0.15s;
+      opacity: 0.97;
+      outline: none;
+      backdrop-filter: blur(2px);
     }
     .dpad-btn:active {
-      background: #a020f0;
+      background: #a020f0cc;
+      border: 3px solid #fff;
+      opacity: 1;
     }
-    #upBtn    { top: 0;   left: 50%; transform: translate(-50%, 0); }
-    #downBtn  { bottom: 0; left: 50%; transform: translate(-50%, 0);}
-    #leftBtn  { top: 50%;  left: 0;   transform: translate(0, -50%);}
-    #rightBtn { top: 50%;  right: 0;  transform: translate(0, -50%);}
-    #pauseDpadBtn {
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.5rem;
-      background: rgba(255,255,255,0.32);
-      border: 2px solid #a020f0;
-      color: #fff;
-      box-shadow: 0 0 16px #a020f0;
-      z-index: 2;
+    @media (max-width: 650px) {
+      .dpad-btn {
+        width: 64px;
+        height: 64px;
+        font-size: 1.52rem;
+      }
+      #dpad-area { margin: 1.2em 0 0.8em 0; }
+      #statusBarCombined, #statusBarRow1, #statusBarRow2 { font-size: 1.0rem; }
     }
     .visually-hidden {
       position: absolute !important;
@@ -210,62 +239,68 @@
       clip: rect(1px, 1px, 1px, 1px);
       white-space: nowrap;
     }
-    @media (max-width: 550px) {
-      #controls, #dpad {
-        width: 160px;
-        height: 160px;
-      }
-      .dpad-btn {
-        width: 46px;
-        height: 46px;
-        font-size: 1.2rem;
-      }
-    }
-    .show-dpad #pauseBtn {
-      display: none !important;
-    }
   </style>
 </head>
 <body>
-<div style="position:relative;">
-  <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
-  <div id="overlay"></div>
-</div>
-<div id="controls" aria-label="Game Controller">
-  <div id="dpad">
-    <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
-    <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
-    <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
-    <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
-    <button id="pauseDpadBtn" class="dpad-btn" aria-label="Pause/Resume">⏯️</button>
+<div id="main-content">
+  <div style="position:relative;">
+    <canvas id="gameCanvas" tabindex="0" aria-label="Snake game"></canvas>
+    <div id="overlay"></div>
   </div>
-</div>
-<div id="statusBar">
-  <span id="scoreDisplay">Score: 0</span>
-  <span id="highScoreDisplay">High Score: 0</span>
-  <button id="pauseBtn" aria-pressed="false" title="Pause/Resume">⏸️</button>
-  <button id="muteBtn" aria-pressed="false" title="Mute/Unmute SFX">🔊</button>
-  <label for="speedSelect" class="visually-hidden">Game Speed</label>
-  <select id="speedSelect" title="Game Speed">
-    <option value="250">Normal</option>
-    <option value="120">Fast</option>
-    <option value="60">Turbo</option>
-  </select>
-  <button id="toggleRadio" aria-pressed="false">Radio ON</button>
-  <button id="loginBtn">LOG IN</button>
-</div>
-<div id="gameStatusLine" aria-live="polite">
-  <span>Game over.</span>
-  <span id="finalScore">Score: 0</span>
-  <button id="restartBtn">Play Again</button>
-  <a href="https://games4punks.github.io/spacerun3008/leaderboard.html" class="leaderboard-link" target="_blank" rel="noopener noreferrer">View Leaderboard</a>
-</div>
-<div id="loginPopup" aria-modal="true" role="dialog">
-  <span id="closeLoginPopup" tabindex="0" aria-label="Close login popup">&times;</span>
-  <p>Select WAX Wallet</p>
-  <button onclick="alert('Login with Anchor')">Anchor</button>
-  <button onclick="alert('Login with MyCloud')">MyCloud</button>
-  <button onclick="alert('Login with Wombat')">Wombat</button>
+  <!-- SECTION 1: Status bar for desktop (single line) -->
+  <div id="statusBarCombined">
+    <span id="scoreDisplay">Score: 0</span>
+    <span id="highScoreDisplay">High Score: 0</span>
+    <button id="pauseBtn" aria-pressed="false" title="Pause/Resume">⏸️</button>
+    <button id="muteBtn" aria-pressed="false" title="Mute/Unmute SFX">🔊</button>
+    <label for="speedSelect" class="visually-hidden">Game Speed</label>
+    <select id="speedSelect" title="Game Speed">
+      <option value="250">Normal</option>
+      <option value="120">Fast</option>
+      <option value="60">Turbo</option>
+    </select>
+    <button id="toggleRadio" aria-pressed="false">Radio ON</button>
+    <button id="loginBtn">LOG IN</button>
+  </div>
+  <!-- SECTION 1: Status bar for touch (two lines, same design as desktop) -->
+  <div id="statusBarRow1">
+    <span id="scoreDisplayTouch">Score: 0</span>
+    <span id="highScoreDisplayTouch">High Score: 0</span>
+    <button id="pauseBtnTouch" aria-pressed="false" title="Pause/Resume">⏸️</button>
+  </div>
+  <div id="statusBarRow2">
+    <button id="muteBtnTouch" aria-pressed="false" title="Mute/Unmute SFX">🔊</button>
+    <label for="speedSelectTouch" class="visually-hidden">Game Speed</label>
+    <select id="speedSelectTouch" title="Game Speed">
+      <option value="250">Normal</option>
+      <option value="120">Fast</option>
+      <option value="60">Turbo</option>
+    </select>
+    <button id="toggleRadioTouch" aria-pressed="false">Radio ON</button>
+    <button id="loginBtnTouch">LOG IN</button>
+  </div>
+  <div id="gameStatusLine" aria-live="polite">
+    <span>Game over.</span>
+    <span id="finalScore">Score: 0</span>
+    <button id="restartBtn">Play Again</button>
+    <a href="https://games4punks.github.io/spacerun3008/leaderboard.html" class="leaderboard-link" target="_blank" rel="noopener noreferrer">View Leaderboard</a>
+  </div>
+  <div id="loginPopup" aria-modal="true" role="dialog">
+    <span id="closeLoginPopup" tabindex="0" aria-label="Close login popup">&times;</span>
+    <p>Select WAX Wallet</p>
+    <button onclick="alert('Login with Anchor')">Anchor</button>
+    <button onclick="alert('Login with MyCloud')">MyCloud</button>
+    <button onclick="alert('Login with Wombat')">Wombat</button>
+  </div>
+  <!-- SECTION 2: D-pad, only shows on touch devices -->
+  <div id="dpad-area">
+    <div id="dpad-grid">
+      <button id="leftBtn"  class="dpad-btn" aria-label="Move Left">←</button>
+      <button id="upBtn"    class="dpad-btn" aria-label="Move Up">↑</button>
+      <button id="rightBtn" class="dpad-btn" aria-label="Move Right">→</button>
+      <button id="downBtn"  class="dpad-btn" aria-label="Move Down">↓</button>
+    </div>
+  </div>
 </div>
 <audio id="radioStream" loop>
   <source src="http://stream.radiojar.com/2qm1fc5kb" type="audio/mpeg">
@@ -286,8 +321,39 @@ window.onload = function() {
       (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
     );
   }
+  // Status bar element refs
+  const statusBarCombined = document.getElementById("statusBarCombined");
+  const statusBarRow1 = document.getElementById("statusBarRow1");
+  const statusBarRow2 = document.getElementById("statusBarRow2");
+
+  // Touch/desktop split
   if (isTouchDevice()) {
     document.body.classList.add('show-dpad');
+    statusBarCombined.style.display = "none";
+    statusBarRow1.style.display = "flex";
+    statusBarRow2.style.display = "flex";
+  } else {
+    statusBarCombined.style.display = "flex";
+    statusBarRow1.style.display = "none";
+    statusBarRow2.style.display = "none";
+  }
+
+  // For game logic, use the correct controls depending on device:
+  // PC: original IDs; TOUCH: ...Touch IDs
+  function getEl(id) {
+    if (isTouchDevice()) {
+      // Map PC IDs to Touch IDs
+      switch (id) {
+        case "scoreDisplay": return document.getElementById("scoreDisplayTouch");
+        case "highScoreDisplay": return document.getElementById("highScoreDisplayTouch");
+        case "pauseBtn": return document.getElementById("pauseBtnTouch");
+        case "muteBtn": return document.getElementById("muteBtnTouch");
+        case "speedSelect": return document.getElementById("speedSelectTouch");
+        case "toggleRadio": return document.getElementById("toggleRadioTouch");
+        case "loginBtn": return document.getElementById("loginBtnTouch");
+      }
+    }
+    return document.getElementById(id);
   }
 
   const canvas = document.getElementById("gameCanvas");
@@ -310,14 +376,24 @@ window.onload = function() {
   let touchStartX, touchStartY;
   let lastOverlayMsg = "";
 
-  const statusBar = document.getElementById("statusBar");
-  const scoreDisplay = document.getElementById("scoreDisplay");
-  const highScoreDisplay = document.getElementById("highScoreDisplay");
   const gameStatusLine = document.getElementById("gameStatusLine");
   const finalScoreSpan = document.getElementById("finalScore");
   const restartBtn = document.getElementById("restartBtn");
   const radio = document.getElementById("radioStream");
-  const toggleRadioBtn = document.getElementById("toggleRadio");
+  const overlay = document.getElementById("overlay");
+  const loginPopup = document.getElementById("loginPopup");
+  const closeLoginPopup = document.getElementById("closeLoginPopup");
+
+  // Touch/PC control ids
+  const pauseBtn = getEl("pauseBtn");
+  const muteBtn = getEl("muteBtn");
+  const speedSelect = getEl("speedSelect");
+  const toggleRadioBtn = getEl("toggleRadio");
+  const loginBtn = getEl("loginBtn");
+  const scoreDisplay = getEl("scoreDisplay");
+  const highScoreDisplay = getEl("highScoreDisplay");
+
+  // Radio, sound, login
   const explosionSound = document.getElementById("explosionSound");
   const crashSound = document.getElementById("crashSound");
   const spaceshipSound = document.getElementById("spaceshipSound");
@@ -325,23 +401,15 @@ window.onload = function() {
   const rocketSound = document.getElementById("rocketSound");
   const satelliteSound = document.getElementById("satelliteSound");
   const spacemanSound = document.getElementById("spacemanSound");
-  const loginPopup = document.getElementById("loginPopup");
-  const loginBtn = document.getElementById("loginBtn");
-  const closeLoginPopup = document.getElementById("closeLoginPopup");
-  const pauseBtn = document.getElementById("pauseBtn");
-  const muteBtn = document.getElementById("muteBtn");
-  const speedSelect = document.getElementById("speedSelect");
-  const overlay = document.getElementById("overlay");
+
   const upBtn = document.getElementById("upBtn");
   const downBtn = document.getElementById("downBtn");
   const leftBtn = document.getElementById("leftBtn");
   const rightBtn = document.getElementById("rightBtn");
-  const pauseDpadBtn = document.getElementById("pauseDpadBtn");
 
   // Add login popup logic
   loginBtn.onclick = () => { loginPopup.style.display = "block"; }
   closeLoginPopup.onclick = () => { loginPopup.style.display = "none"; }
-  // Optional: Dismiss popup on Escape key
   window.addEventListener('keydown', function(e) {
     if (e.key === "Escape") loginPopup.style.display = "none";
   });
@@ -458,7 +526,12 @@ window.onload = function() {
     updateHud();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     gameStatusLine.style.display = "none";
-    statusBar.style.display = "block";
+    if (isTouchDevice()) {
+      statusBarRow1.style.display = "flex";
+      statusBarRow2.style.display = "flex";
+    } else {
+      statusBarCombined.style.display = "flex";
+    }
     hideOverlay();
     clearInterval(gameInterval);
     stopAllAppleTimers();
@@ -545,8 +618,13 @@ window.onload = function() {
   }
 
   function updateHud() {
+    // Update both desktop and touch status bars
     scoreDisplay.textContent = "Score: " + score;
     highScoreDisplay.textContent = "High Score: " + highScore;
+    if (isTouchDevice()) {
+      document.getElementById("scoreDisplayTouch").textContent = "Score: " + score;
+      document.getElementById("highScoreDisplayTouch").textContent = "High Score: " + highScore;
+    }
   }
   function showOverlay(msg) {
     overlay.textContent = msg;
@@ -558,7 +636,6 @@ window.onload = function() {
     lastOverlayMsg = "";
   }
   function setDirection(newDir) {
-    // Classic snake: block instant reversal except when stopped (direction.x/y === 0)
     if (
       (newDir.x !== -direction.x || direction.x === 0) &&
       (newDir.y !== -direction.y || direction.y === 0)
@@ -573,7 +650,12 @@ window.onload = function() {
     stopAllAppleTimers();
     finalScoreSpan.textContent = `Score: ${score}`;
     updateHud();
-    statusBar.style.display = "none";
+    if (isTouchDevice()) {
+      statusBarRow1.style.display = "none";
+      statusBarRow2.style.display = "none";
+    } else {
+      statusBarCombined.style.display = "none";
+    }
     gameStatusLine.style.display = "flex";
     gameOverFlag = true;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -614,18 +696,26 @@ window.onload = function() {
     }
     touchStartX = touchStartY = undefined;
   });
+
+  // D-pad (touch) event bindings
   upBtn.onclick = e => setDirection({ x: 0, y: -1 });
   downBtn.onclick = e => setDirection({ x: 0, y: 1 });
   leftBtn.onclick = e => setDirection({ x: -1, y: 0 });
   rightBtn.onclick = e => setDirection({ x: 1, y: 0 });
-  pauseDpadBtn.onclick = togglePause;
-  pauseBtn.onclick = togglePause;
+
+  // Pause/other controls
+  function bindButton(btn, clickFn) {
+    if (btn) btn.onclick = clickFn;
+  }
+  // Both desktop/touch pause buttons
+  bindButton(document.getElementById("pauseBtn"), togglePause);
+  bindButton(document.getElementById("pauseBtnTouch"), togglePause);
   function togglePause() {
     if (gameOverFlag) return;
+    let pb = isTouchDevice() ? document.getElementById("pauseBtnTouch") : document.getElementById("pauseBtn");
+    pb.innerHTML = paused ? "⏸️" : "▶️";
+    pb.setAttribute("aria-pressed", paused ? "false" : "true");
     paused = !paused;
-    pauseBtn.innerHTML = paused ? "▶️" : "⏸️";
-    pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
-    pauseDpadBtn.innerHTML = paused ? "▶️" : "⏯️";
     if (paused) {
       showOverlay("PAUSED");
     } else {
@@ -633,28 +723,60 @@ window.onload = function() {
     }
   }
   restartBtn.onclick = resetGame;
-  toggleRadioBtn.onclick = () => {
-    if (radio.paused) {
-      radio.play();
-      toggleRadioBtn.textContent = "Radio OFF";
-      toggleRadioBtn.setAttribute("aria-pressed", "true");
-    } else {
-      radio.pause();
-      toggleRadioBtn.textContent = "Radio ON";
-      toggleRadioBtn.setAttribute("aria-pressed", "false");
-    }
-  };
-  muteBtn.onclick = () => {
+  // Mute
+  bindButton(document.getElementById("muteBtn"), () => {
     sfxMuted = !sfxMuted;
-    muteBtn.textContent = sfxMuted ? "🔇" : "🔊";
-    muteBtn.setAttribute("aria-pressed", sfxMuted ? "true" : "false");
-  };
-  speedSelect.value = speed + '';
-  speedSelect.onchange = () => {
-    speed = Number(speedSelect.value);
+    document.getElementById("muteBtn").textContent = sfxMuted ? "🔇" : "🔊";
+    if (document.getElementById("muteBtnTouch"))
+      document.getElementById("muteBtnTouch").textContent = sfxMuted ? "🔇" : "🔊";
+  });
+  bindButton(document.getElementById("muteBtnTouch"), () => {
+    sfxMuted = !sfxMuted;
+    document.getElementById("muteBtn").textContent = sfxMuted ? "🔇" : "🔊";
+    document.getElementById("muteBtnTouch").textContent = sfxMuted ? "🔇" : "🔊";
+  });
+  // Speed
+  document.getElementById("speedSelect").onchange = () => {
+    speed = Number(document.getElementById("speedSelect").value);
     clearInterval(gameInterval);
     gameInterval = setInterval(gameLoop, speed);
+    document.getElementById("speedSelectTouch").value = speed + '';
   };
+  document.getElementById("speedSelectTouch").onchange = () => {
+    speed = Number(document.getElementById("speedSelectTouch").value);
+    clearInterval(gameInterval);
+    gameInterval = setInterval(gameLoop, speed);
+    document.getElementById("speedSelect").value = speed + '';
+  };
+  // Radio
+  bindButton(document.getElementById("toggleRadio"), () => {
+    if (radio.paused) {
+      radio.play();
+      document.getElementById("toggleRadio").textContent = "Radio OFF";
+      if (document.getElementById("toggleRadioTouch"))
+        document.getElementById("toggleRadioTouch").textContent = "Radio OFF";
+    } else {
+      radio.pause();
+      document.getElementById("toggleRadio").textContent = "Radio ON";
+      if (document.getElementById("toggleRadioTouch"))
+        document.getElementById("toggleRadioTouch").textContent = "Radio ON";
+    }
+  });
+  bindButton(document.getElementById("toggleRadioTouch"), () => {
+    if (radio.paused) {
+      radio.play();
+      document.getElementById("toggleRadio").textContent = "Radio OFF";
+      document.getElementById("toggleRadioTouch").textContent = "Radio OFF";
+    } else {
+      radio.pause();
+      document.getElementById("toggleRadio").textContent = "Radio ON";
+      document.getElementById("toggleRadioTouch").textContent = "Radio ON";
+    }
+  });
+  // Login
+  bindButton(document.getElementById("loginBtn"), () => { loginPopup.style.display = "block"; });
+  bindButton(document.getElementById("loginBtnTouch"), () => { loginPopup.style.display = "block"; });
+
   canvas.onclick = () => canvas.focus();
   function resizeCanvas() {
     const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
