@@ -98,7 +98,7 @@
     }
     #loginPopup {
       display: none;
-      position: absolute;
+      position: fixed;
       top: 30%;
       left: 50%;
       transform: translateX(-50%);
@@ -337,6 +337,14 @@ window.onload = function() {
   const leftBtn = document.getElementById("leftBtn");
   const rightBtn = document.getElementById("rightBtn");
   const pauseDpadBtn = document.getElementById("pauseDpadBtn");
+
+  // Add login popup logic
+  loginBtn.onclick = () => { loginPopup.style.display = "block"; }
+  closeLoginPopup.onclick = () => { loginPopup.style.display = "none"; }
+  // Optional: Dismiss popup on Escape key
+  window.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") loginPopup.style.display = "none";
+  });
 
   explosionSound.volume = 0.5;
   crashSound.volume = 0.5;
